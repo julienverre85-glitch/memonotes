@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script>
+    // Redirige vers l'appli en préservant le token dans l'URL
+    const token = window.location.hash;
+    window.location.replace('/memonotes/' + token);
+  </script>
+</head>
+<body></body>
+</html>
