@@ -11,6 +11,8 @@ const Q = {
 }
 
 const CAT_PALETTE = ['#16a34a','#2563eb','#9333ea','#db2777','#ea580c','#0891b2','#65a30d','#854d0e','#475569','#b45309']
+const MONTHS_FR = ['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre']
+const DAYS_FR = ['Lun','Mar','Mer','Jeu','Ven','Sam','Dim']
 
 function urlBase64ToUint8Array(base64String) {
   const padding = '='.repeat((4 - base64String.length % 4) % 4)
@@ -19,6 +21,119 @@ function urlBase64ToUint8Array(base64String) {
   return new Uint8Array([...rawData].map(c => c.charCodeAt(0)))
 }
 
+/* ──────────────────── DATE TIME PICKER ──────────────────── */
+function DateTimePicker({ value, onChange }) {
+  const today = new Date()
+  const parsed = value ? new Date(value) : null
+  const [year, setYear]   = useState(parsed ? parsed.getFullYear() : today.getFullYear())
+  const [month, setMonth] = useState(parsed ? parsed.getMonth() : today.getMonth())
+  const [day, setDay]     = useState(parsed ? parsed.getDate() : null)
+  const [hour, setHour]   = useState(parsed ? parsed.getHours() : 9)
+  const [minute, setMinute] = useState(parsed ? Math.round(parsed.getMinutes()/5)*5 : 0)
+  const [showTime, setShowTime] = useState(!!parsed)
+
+  const firstDay    = new Date(year, month, 1).getDay()
+  const daysInMonth = new Date(year, month + 1, 0).getDate()
+  const offset      = (firstDay + 6) % 7
+
+  const prevMonth = () => { if(month===0){setMonth(11);setYear(y=>y-1)}else setMonth(m=>m-1) }
+  const nextMonth = () => { if(month===11){setMonth(0);setYear(y=>y+1)}else setMonth(m=>m+1) }
+
+  const selectDay = (d) => {
+    setDay(d); setShowTime(true)
+    const dt = new Date(year, month, d, hour, minute)
+    onChange(dt.toISOString())
+  }
+
+  const updateTime = (h, m) => {
+    if (!day) return
+    const dt = new Date(year, month, day, h, m)
+    onChange(dt.toISOString())
+  }
+
+  const clear = () => { setDay(null); setShowTime(false); onChange('') }
+
+  const isToday = d => d===today.getDate() && month===today.getMonth() && year===today.getFullYear()
+  const isSelected = d => d===day
+
+  const cells = []
+  for(let i=0;i<offset;i++) cells.push(null)
+  for(let d=1;d<=daysInMonth;d++) cells.push(d)
+
+  const hours = Array.from({length:24},(_,i)=>i)
+  const minutes = [0,5,10,15,20,25,30,35,40,45,50,55]
+
+  return (
+    <div style={{background:'#f8f6f1',border:'1px solid #e5e0d5',borderRadius:12,overflow:'hidden'}}>
+      {/* Navigation mois */}
+      <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'10px 14px',background:'#fff',borderBottom:'1px solid #f0ece3'}}>
+        <button onClick={prevMonth} style={{background:'transparent',border:'none',cursor:'pointer',fontSize:18,color:'#9a8f7a',padding:'0 6px'}}>‹</button>
+        <span style={{fontWeight:600,fontSize:14,color:'#1a1208'}}>{MONTHS_FR[month]} {year}</span>
+        <button onClick={nextMonth} style={{background:'transparent',border:'none',cursor:'pointer',fontSize:18,color:'#9a8f7a',padding:'0 6px'}}>›</button>
+      </div>
+
+      {/* Grille jours */}
+      <div style={{padding:'10px 12px'}}>
+        <div style={{display:'grid',gridTemplateColumns:'repeat(7,1fr)',gap:2,marginBottom:6}}>
+          {DAYS_FR.map(d=><div key={d} style={{textAlign:'center',fontSize:10,fontWeight:600,color:'#9a8f7a',padding:'2px 0'}}>{d}</div>)}
+          {cells.map((d,i)=>(
+            <div key={i} onClick={()=>d&&selectDay(d)} style={{
+              textAlign:'center',fontSize:12,padding:'5px 2px',borderRadius:6,cursor:d?'pointer':'default',
+              background: isSelected(d) ? '#c9a84c' : isToday(d) ? 'rgba(201,168,76,0.15)' : 'transparent',
+              color: isSelected(d) ? '#fff' : isToday(d) ? '#c9a84c' : d ? '#1a1208' : 'transparent',
+              fontWeight: isSelected(d)||isToday(d) ? 700 : 400,
+              border: isToday(d)&&!isSelected(d) ? '1px solid #c9a84c' : '1px solid transparent',
+            }}>{d||''}</div>
+          ))}
+        </div>
+
+        {/* Sélecteur heure/minute */}
+        {showTime && day && (
+          <div style={{borderTop:'1px solid #e5e0d5',paddingTop:10,marginTop:4}}>
+            <p style={{fontSize:11,fontWeight:600,color:'#9a8f7a',textTransform:'uppercase',letterSpacing:'0.5px',marginBottom:8,textAlign:'center'}}>
+              Heure du rappel
+            </p>
+            <div style={{display:'flex',gap:8,justifyContent:'center',alignItems:'center'}}>
+              {/* Heures */}
+              <div style={{background:'#fff',border:'1px solid #e5e0d5',borderRadius:8,overflow:'hidden',height:120,overflowY:'auto',width:52}}>
+                {hours.map(h=>(
+                  <div key={h} onClick={()=>{setHour(h);updateTime(h,minute)}} style={{
+                    padding:'5px 0',textAlign:'center',fontSize:13,cursor:'pointer',
+                    background:hour===h?'#c9a84c':'transparent',
+                    color:hour===h?'#fff':'#1a1208',fontWeight:hour===h?700:400
+                  }}>{String(h).padStart(2,'0')}</div>
+                ))}
+              </div>
+              <span style={{fontSize:18,fontWeight:700,color:'#9a8f7a'}}>:</span>
+              {/* Minutes */}
+              <div style={{background:'#fff',border:'1px solid #e5e0d5',borderRadius:8,overflow:'hidden',height:120,overflowY:'auto',width:52}}>
+                {minutes.map(m=>(
+                  <div key={m} onClick={()=>{setMinute(m);updateTime(hour,m)}} style={{
+                    padding:'5px 0',textAlign:'center',fontSize:13,cursor:'pointer',
+                    background:minute===m?'#c9a84c':'transparent',
+                    color:minute===m?'#fff':'#1a1208',fontWeight:minute===m?700:400
+                  }}>{String(m).padStart(2,'0')}</div>
+                ))}
+              </div>
+            </div>
+            <p style={{textAlign:'center',marginTop:8,fontSize:13,color:'#c9a84c',fontWeight:600}}>
+              {String(day).padStart(2,'0')}/{String(month+1).padStart(2,'0')}/{year} à {String(hour).padStart(2,'0')}:{String(minute).padStart(2,'0')}
+            </p>
+          </div>
+        )}
+
+        {/* Bouton effacer */}
+        {day && (
+          <button onClick={clear} style={{width:'100%',marginTop:8,background:'transparent',border:'1px solid #e5e0d5',color:'#9a8f7a',borderRadius:7,padding:'5px',fontSize:12,cursor:'pointer',fontFamily:'inherit'}}>
+            Supprimer le rappel
+          </button>
+        )}
+      </div>
+    </div>
+  )
+}
+
+/* ──────────────────── AUTH ──────────────────── */
 function AuthScreen({ onAuth }) {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -35,7 +150,7 @@ function AuthScreen({ onAuth }) {
     const { data, error: err } = await fn
     setLoading(false)
     if (err) { setError(err.message); return }
-    if (mode === 'signup') setMsg('Vérifie ta boîte mail pour confirmer ton compte.')
+    if (mode === 'signup') setMsg('Compte créé ! Tu peux te connecter.')
     else onAuth(data.session)
   }
 
@@ -63,6 +178,7 @@ function AuthScreen({ onAuth }) {
   )
 }
 
+/* ──────────────────── CAT DROPDOWN ──────────────────── */
 function CatDropdown({ categories, selected, onChange }) {
   const [open, setOpen] = useState(false)
   const ref = useRef()
@@ -101,6 +217,7 @@ function CatDropdown({ categories, selected, onChange }) {
   )
 }
 
+/* ──────────────────── NOTE CARD ──────────────────── */
 function NoteCard({ note, categories, onEdit, onDelete }) {
   const q = Q[note.importance]
   const hasReminder = !!note.reminder_at
@@ -141,12 +258,13 @@ function NoteCard({ note, categories, onEdit, onDelete }) {
   )
 }
 
+/* ──────────────────── NOTE MODAL ──────────────────── */
 function NoteModal({ note, categories, onSave, onClose }) {
-  const [title, setTitle]         = useState(note?.title || '')
-  const [content, setContent]     = useState(note?.content || '')
-  const [importance, setImp]      = useState(note?.importance || 1)
-  const [cats, setCats]           = useState(note?.cats || [])
-  const [reminderAt, setReminderAt] = useState(note?.reminder_at ? new Date(note.reminder_at).toISOString().slice(0,16) : '')
+  const [title, setTitle]           = useState(note?.title || '')
+  const [content, setContent]       = useState(note?.content || '')
+  const [importance, setImp]        = useState(note?.importance || 1)
+  const [cats, setCats]             = useState(note?.cats || [])
+  const [reminderAt, setReminderAt] = useState(note?.reminder_at || '')
   const [emailNotify, setEmailNotify] = useState(note?.email_notify ?? true)
   const [pushNotify, setPushNotify]   = useState(note?.push_notify ?? true)
   const [saving, setSaving] = useState(false)
@@ -159,7 +277,7 @@ function NoteModal({ note, categories, onSave, onClose }) {
       ...(note?.id ? {id:note.id} : {}),
       title: title.trim(), content: content.trim(),
       importance, cats,
-      reminder_at: reminderAt ? new Date(reminderAt).toISOString() : null,
+      reminder_at: reminderAt || null,
       email_notify: emailNotify, push_notify: pushNotify, reminder_sent: false,
     })
     setSaving(false)
@@ -177,6 +295,7 @@ function NoteModal({ note, categories, onSave, onClose }) {
         <div style={s.modalBody}>
           <input style={{...s.input,fontSize:15,fontWeight:500}} placeholder="Titre *" value={title} onChange={e => setTitle(e.target.value)} />
           <textarea style={{...s.input,...s.textarea}} placeholder="Contenu (optionnel)" value={content} onChange={e => setContent(e.target.value)} />
+
           <label style={s.label}>Importance (Eisenhower)</label>
           <div style={s.quadGrid}>
             {Object.entries(Q).map(([k,v]) => (
@@ -187,10 +306,13 @@ function NoteModal({ note, categories, onSave, onClose }) {
               </button>
             ))}
           </div>
+
           <label style={s.label}>Catégories</label>
           <CatDropdown categories={categories} selected={cats} onChange={setCats} />
+
           <label style={s.label}>Date & heure de rappel</label>
-          <input style={s.input} type="datetime-local" value={reminderAt} onChange={e => setReminderAt(e.target.value)} />
+          <DateTimePicker value={reminderAt} onChange={setReminderAt} />
+
           {reminderAt && (
             <div style={s.notifRow}>
               <label style={s.checkLabel}><input type="checkbox" checked={emailNotify} onChange={e => setEmailNotify(e.target.checked)} style={{accentColor:'#c9a84c'}} /> Rappel par e-mail</label>
@@ -209,6 +331,7 @@ function NoteModal({ note, categories, onSave, onClose }) {
   )
 }
 
+/* ──────────────────── CAT SETTINGS ──────────────────── */
 function CatSettings({ categories, onChange }) {
   const [newName, setNewName]   = useState('')
   const [newColor, setNewColor] = useState(CAT_PALETTE[0])
@@ -260,6 +383,7 @@ function CatSettings({ categories, onChange }) {
   )
 }
 
+/* ──────────────────── CALENDAR ──────────────────── */
 function CalendarView({ notes }) {
   const today = new Date()
   const [year, setYear]   = useState(today.getFullYear())
@@ -310,6 +434,7 @@ function CalendarView({ notes }) {
   )
 }
 
+/* ──────────────────── SETTINGS ──────────────────── */
 function SettingsView({ session, categories, onCategoriesChange }) {
   const [pushStatus, setPushStatus] = useState('idle')
   const [pushMsg, setPushMsg]       = useState('')
@@ -342,7 +467,7 @@ function SettingsView({ session, categories, onCategoriesChange }) {
       <CatSettings categories={categories} onChange={saveCategories} />
       <div style={s.settingsCard}>
         <h3 style={s.settingsCardTitle}>🔔 Notifications push</h3>
-        <p style={{color:'#7a6f5e',marginBottom:16,fontSize:14,lineHeight:1.5}}>Autorise les notifications pour recevoir des rappels directement sur cet appareil, même quand l'appli est fermée.</p>
+        <p style={{color:'#7a6f5e',marginBottom:16,fontSize:14,lineHeight:1.5}}>Autorise les notifications pour recevoir des rappels directement sur cet appareil.</p>
         <button style={{...s.btn,opacity:pushStatus==='loading'?0.6:1}} onClick={subscribePush} disabled={pushStatus==='loading'}>
           {pushStatus==='loading' ? '…' : 'Activer les notifications push'}
         </button>
@@ -367,6 +492,7 @@ function SettingsView({ session, categories, onCategoriesChange }) {
   )
 }
 
+/* ──────────────────── MAIN APP ──────────────────── */
 export default function App() {
   const [session, setSession]       = useState(null)
   const [loading, setLoading]       = useState(true)
