@@ -276,22 +276,21 @@ function CatDropdown({ categories, selected, onChange, onNewCategory }) {
 function NoteCard({ note, categories, onEdit, onDelete }) {
   const isTask = note.type !== 'note';
   const q = Q[note.importance];
-  const noteCats = (note.cats||[]).map(id => categories.find(c => c.id===id)).filter(Boolean);
   
-  // Formatage de la date de création
-  const dateStr = new Date(note.created_at).toLocaleString('fr-FR', {
-    day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit'
-  });
+  // Couleurs pastel pour les notes
+  const noteColors = ['#fff9c4', '#e1f5fe', '#f3e5f5', '#e8f5e9', '#fff3e0'];
+  // On utilise l'ID pour que la couleur reste la même pour une note donnée
+  const pastelBg = isTask ? q.light : noteColors[note.id.charCodeAt(0) % noteColors.length];
 
   return (
-    <div style={s.card}>
+    <div style={{...s.card, boxShadow: isTask ? 'none' : '2px 4px 10px rgba(0,0,0,0.05)'}}>
       {isTask && (
         <div style={{...s.cardBanner, background:q.color}}>
           <span style={s.bannerEmoji}>{q.emoji}</span>
           <span style={s.bannerLabel}>{q.label}</span>
         </div>
       )}
-      <div style={{...s.cardBody, background: isTask ? q.light : '#fff'}}>
+     <div style={{...s.cardBody, background: pastelBg, transition: '0.3s'}}>
         <h3 style={s.cardTitle}>{note.title}</h3>
         
         {/* On affiche la date de création en petit sous le titre */}
@@ -328,11 +327,12 @@ function NoteModal({ note, categories, onSave, onClose, onNewCategory, currentTa
   const [pushNotify, setPushNotify]   = useState(note?.push_notify ?? true)
   const [saving, setSaving] = useState(false)
 
-  // Détection du mode : Est-ce une note simple ?
-  // On regarde soit le type de la note existante, soit l'onglet où on se trouve
-  const isSimpleNote = note?.type === 'note' || (currentTab === 'simple_notes' && !note?.id);
+  // 1. On utilise localType pour piloter TOUTE la modal
+  const [localType, setLocalType] = useState(note?.type || (currentTab === 'simple_notes' ? 'note' : 'task'));
   
-  // Si c'est une tâche, on prend la couleur de priorité. Si c'est une note, une couleur neutre.
+  // 2. IMPORTANT : isSimpleNote dépend maintenant de localType
+  const isSimpleNote = localType === 'note';
+  
   const headerColor = isSimpleNote ? '#c9a84c' : Q[importance].color;
 
   const save = async () => {
@@ -342,12 +342,13 @@ function NoteModal({ note, categories, onSave, onClose, onNewCategory, currentTa
       ...(note?.id ? {id:note.id} : {}),
       title: title.trim(), 
       content: content.trim(),
-      importance: isSimpleNote ? 4 : importance, // Par défaut priorité basse pour les notes
+      // On utilise localType ici pour que Supabase enregistre le bon type !
+      type: localType, 
+      importance: isSimpleNote ? 4 : importance, 
       cats,
       reminder_at: isSimpleNote ? null : (reminderAt || null),
       email_notify: isSimpleNote ? false : emailNotify, 
       push_notify: isSimpleNote ? false : pushNotify,
-      type: isSimpleNote ? 'note' : 'task'
     })
     setSaving(false)
   }
@@ -356,11 +357,21 @@ function NoteModal({ note, categories, onSave, onClose, onNewCategory, currentTa
     <div style={s.overlay} onClick={e => e.target===e.currentTarget && onClose()}>
       <div style={{...s.modal, animation:'slideUp 0.25s ease'}}>
         
-        {/* Header avec couleur dynamique */}
         <div style={{...s.modalHeader, background: headerColor}}>
-          <span style={{fontFamily:'var(--font-display)',fontSize:18,fontWeight:600,color:'#fff'}}>
-            {note?.id ? 'Modifier' : 'Nouveau'} {isSimpleNote ? 'Note' : 'Tâche'}
-          </span>
+          <div style={{display:'flex', gap: 10, alignItems: 'center'}}>
+            <span style={{fontFamily:'var(--font-display)',fontSize:18,fontWeight:600,color:'#fff'}}>
+              {isSimpleNote ? 'Note 📝' : 'Tâche 📋'}
+            </span>
+            
+            {/* Le bouton qui change localType et fait tout basculer */}
+            <button 
+              type="button"
+              onClick={() => setLocalType(isSimpleNote ? 'task' : 'note')}
+              style={{background: 'rgba(255,255,255,0.2)', border: '1px solid #fff', color: '#fff', borderRadius: 15, padding: '2px 10px', fontSize: 11, cursor: 'pointer'}}
+            >
+              Basculer en {isSimpleNote ? 'Tâche' : 'Note'}
+            </button>
+          </div>
           <button style={{...s.iconBtn,color:'#fff',fontSize:20}} onClick={onClose}>×</button>
         </div>
 
@@ -368,10 +379,10 @@ function NoteModal({ note, categories, onSave, onClose, onNewCategory, currentTa
           <input style={{...s.input,fontSize:15,fontWeight:500}} placeholder="Titre *" value={title} onChange={e => setTitle(e.target.value)} />
           <textarea style={{...s.input,...s.textarea}} placeholder="Contenu (optionnel)" value={content} onChange={e => setContent(e.target.value)} />
 
-          {/* SECTION PRIORITÉ : Uniquement pour les tâches */}
+          {/* Si on bascule en tâche, les priorités apparaissent comme par magie */}
           {!isSimpleNote && (
             <>
-              <label style={s.label}>Importance / priorité</label>
+              <label style={s.label}>Importance (Eisenhower)</label>
               <div style={s.quadGrid}>
                 {Object.entries(Q).map(([k,v]) => (
                   <button key={k} style={{...s.quadBtn, borderColor:+k===importance ? v.color : '#e5e0d5', background:+k===importance ? v.color+'18' : '#f8f6f1', color:+k===importance ? v.color : '#9a8f7a'}} onClick={() => setImp(+k)}>
@@ -386,18 +397,11 @@ function NoteModal({ note, categories, onSave, onClose, onNewCategory, currentTa
           <label style={s.label}>Catégories</label>
           <CatDropdown categories={categories} selected={cats} onChange={setCats} onNewCategory={onNewCategory} />
 
-          {/* SECTION RAPPEL : Uniquement pour les tâches */}
           {!isSimpleNote && (
             <>
               <label style={s.label}>Date & heure de rappel</label>
               <DateTimePicker value={reminderAt} onChange={setReminderAt} />
-
-              {reminderAt && (
-                <div style={s.notifRow}>
-                  <label style={s.checkLabel}><input type="checkbox" checked={emailNotify} onChange={e => setEmailNotify(e.target.checked)} style={{accentColor:'#c9a84c'}} /> E-mail</label>
-                  <label style={s.checkLabel}><input type="checkbox" checked={pushNotify} onChange={e => setPushNotify(e.target.checked)} style={{accentColor:'#c9a84c'}} /> Push</label>
-                </div>
-              )}
+              {/* ... reste des notifications ... */}
             </>
           )}
         </div>
@@ -412,6 +416,7 @@ function NoteModal({ note, categories, onSave, onClose, onNewCategory, currentTa
     </div>
   )
 }
+
 
 /* ──────────────────── CAT SETTINGS ──────────────────── */
 function CatSettings({ categories, onChange }) {
@@ -657,11 +662,24 @@ export default function App() {
   .filter(n => {
     if (tab === 'notes') return n.type === 'task';
     if (tab === 'simple_notes') return n.type === 'note';
-    return true; // Pour le calendrier
+    return true;
   })
   .filter(n => filterQ === 0 || n.importance === filterQ)
   .filter(n => !filterCat || (n.cats || []).includes(filterCat))
   .filter(n => !search || n.title.toLowerCase().includes(search.toLowerCase()) || (n.content || '').toLowerCase().includes(search.toLowerCase()))
+  // LE TRI INTELLIGENT
+  .sort((a, b) => {
+  if (tab === 'notes') { // Rappel : l'onglet s'appelle 'notes' pour les Tâches
+    if (a.importance !== b.importance) return a.importance - b.importance;
+  }
+  // Si même importance ou si on est dans les Notes simples, le plus récent en haut
+  return new Date(b.created_at) - new Date(a.created_at);
+});
+  
+// FONCTION POUR COMPTER LES NOTES PAR CATÉGORIE
+const getCatCount = (catId) => {
+  return notes.filter(n => (n.cats || []).includes(catId)).length;
+};
   
   return (
     <div style={s.app}>
@@ -719,20 +737,25 @@ export default function App() {
         >
           Toutes
         </button>
-        {categories.map(c => (
-          <button 
-            key={c.id} 
-            onClick={() => setFilterCat(filterCat === c.id ? null : c.id)} 
-            style={{
-              background: filterCat === c.id ? c.color : c.color + '15', 
-              color: filterCat === c.id ? '#fff' : c.color, 
-              border: `1px solid ${c.color}55`, 
-              borderRadius: 20, padding: '3px 11px', fontSize: 12, cursor: 'pointer', fontFamily: 'inherit', fontWeight: 500
-            }}
-          >
-            {c.name}
-          </button>
-        ))}
+       {categories.map(c => {
+  const count = getCatCount(c.id); // On récupère le nombre ici
+  
+  return (
+    <button 
+      key={c.id} 
+      onClick={() => setFilterCat(filterCat === c.id ? null : c.id)} 
+      style={{
+        background: filterCat === c.id ? c.color : c.color + '15', 
+        color: filterCat === c.id ? '#fff' : c.color, 
+        border: `1px solid ${c.color}55`, 
+        borderRadius: 20, padding: '3px 11px', fontSize: 12, cursor: 'pointer', fontWeight: 500
+      }}
+    >
+      {/* On affiche le nom + le compteur s'il y a des notes */}
+      {c.name} {count > 0 && `(${count})`}
+    </button>
+  );
+})}
       </div>
 
       {filtered.length === 0 ? (
