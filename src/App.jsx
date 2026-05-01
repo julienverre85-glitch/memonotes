@@ -290,7 +290,7 @@ function NoteCard({ note, categories, onEdit, onDelete }) {
 }
 
 /* ──────────────────── NOTE MODAL ──────────────────── */
-function NoteModal({ note, categories, onSave, onClose }) {
+function NoteModal({ note, categories, onSave, onClose, onNewCategory }) {
   const [title, setTitle]           = useState(note?.title || '')
   const [content, setContent]       = useState(note?.content || '')
   const [importance, setImp]        = useState(note?.importance || 1)
@@ -339,7 +339,12 @@ function NoteModal({ note, categories, onSave, onClose }) {
           </div>
 
           <label style={s.label}>Catégories</label>
-          <CatDropdown categories={categories} selected={cats} onChange={setCats} onNewCategory={onSaveCategories} />
+          <CatDropdown 
+  categories={categories} 
+  selected={cats} 
+  onChange={setCats} 
+  onNewCategory={onNewCategory} // <-- Doit correspondre au nom juste au-dessus
+/>
 
           <label style={s.label}>Date & heure de rappel</label>
           <DateTimePicker value={reminderAt} onChange={setReminderAt} />
