@@ -13,6 +13,7 @@ const Q = {
 const CAT_PALETTE = ['#16a34a','#2563eb','#9333ea','#db2777','#ea580c','#0891b2','#65a30d','#854d0e','#475569','#b45309']
 const MONTHS_FR = ['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre']
 const DAYS_FR = ['Lun','Mar','Mer','Jeu','Ven','Sam','Dim']
+const [showDone, setShowDone] = useState(false)
 
 function urlBase64ToUint8Array(base64String) {
   const padding = '='.repeat((4 - base64String.length % 4) % 4)
@@ -330,6 +331,8 @@ function NoteModal({ note, categories, onSave, onClose, onNewCategory, currentTa
   const [emailNotify, setEmailNotify] = useState(note?.email_notify ?? true)
   const [pushNotify, setPushNotify]   = useState(note?.push_notify ?? true)
   const [saving, setSaving] = useState(false)
+  const [status, setStatus] = useState(note?.status || 'todo')
+  const [assignee, setAssignee] = useState(note?.assignee || '')
 
   // 1. On utilise localType pour piloter TOUTE la modal
   const [localType, setLocalType] = useState(note?.type || (currentTab === 'simple_notes' ? 'note' : 'task'));
@@ -342,18 +345,22 @@ function NoteModal({ note, categories, onSave, onClose, onNewCategory, currentTa
   const save = async () => {
     if (!title.trim()) return
     setSaving(true)
+    
     await onSave({
       ...(note?.id ? {id:note.id} : {}),
       title: title.trim(), 
       content: content.trim(),
-      // On utilise localType ici pour que Supabase enregistre le bon type !
       type: localType, 
       importance: isSimpleNote ? 4 : importance, 
       cats,
       reminder_at: isSimpleNote ? null : (reminderAt || null),
       email_notify: isSimpleNote ? false : emailNotify, 
       push_notify: isSimpleNote ? false : pushNotify,
+      // ON LES REMET ICI, AVANT LA FERMETURE :
+      status: isSimpleNote ? 'todo' : status,
+      assignee: isSimpleNote ? null : assignee.trim()
     })
+    
     setSaving(false)
   }
 
@@ -397,6 +404,32 @@ function NoteModal({ note, categories, onSave, onClose, onNewCategory, currentTa
               </div>
             </>
           )}
+
+          {!isSimpleNote && (
+  <div style={{display:'flex', gap:10}}>
+    <div style={{flex:1}}>
+      <label style={s.label}>Statut</label>
+      <select 
+        value={status} 
+        onChange={e => setStatus(e.target.value)}
+        style={{...s.input, padding:'7px 10px'}}
+      >
+        <option value="todo">⏳ À faire</option>
+        <option value="doing">🚀 En cours</option>
+        <option value="done">✅ Terminé</option>
+      </select>
+    </div>
+    <div style={{flex:1}}>
+      <label style={s.label}>Collaborateur</label>
+      <input 
+        style={{...s.input, padding:'7px 10px'}} 
+        placeholder="Nom..." 
+        value={assignee} 
+        onChange={e => setAssignee(e.target.value)} 
+      />
+    </div>
+  </div>
+)}
 
           <label style={s.label}>Catégories</label>
           <CatDropdown categories={categories} selected={cats} onChange={setCats} onNewCategory={onNewCategory} />
@@ -593,6 +626,7 @@ export default function App() {
   const [filterQ, setFilterQ]       = useState(0)
   const [filterCat, setFilterCat]   = useState(null)
   const [search, setSearch]         = useState('')
+  const [showDone, setShowDone]     = useState(false)
 
   useEffect(() => {
     supabase.auth.getSession().then(({data:{session}}) => { setSession(session); setLoading(false) })
@@ -631,18 +665,27 @@ export default function App() {
 };
 
   const saveNote = async (payload) => {
-  // On récupère tout ce qui vient de la modal (y compris l'ID et le type)
-  const { id, type, ...dataToSave } = payload;
-
+  const { id, type, status, assignee, ...dataToSave } = payload;
+  
   if (id) {
-    // Mise à jour : on enregistre les modifs et le type (au cas où on a basculé)
     await supabase.from('notes')
-      .update({ ...dataToSave, type, updated_at: new Date().toISOString() })
+      .update({ 
+        ...dataToSave, 
+        type, 
+        status,    // Ajoute bien ça
+        assignee,  // Et ça
+        updated_at: new Date().toISOString() 
+      })
       .eq('id', id);
   } else {
-    // Création : on insère la nouvelle note/tâche
     await supabase.from('notes')
-      .insert({ ...dataToSave, type, user_id: session.user.id });
+      .insert({ 
+        ...dataToSave, 
+        type, 
+        status,    // Et ici aussi
+        assignee, 
+        user_id: session.user.id 
+      });
   }
   await fetchNotes(); 
   setModal(null);
@@ -663,7 +706,10 @@ export default function App() {
 
   const filtered = notes
   .filter(n => {
-    if (tab === 'notes') return n.type === 'task';
+    if (tab === 'notes') {
+      // Dans l'onglet Tâches, on sépare selon le bouton showDone
+      return n.type === 'task' && (showDone ? n.status === 'done' : n.status !== 'done');
+    }
     if (tab === 'simple_notes') return n.type === 'note';
     return true;
   })
@@ -717,18 +763,31 @@ const getCatCount = (catId) => {
       </div>
 
       {/* On n'affiche la ligne Priorité QUE si on est dans l'onglet Tâches ('notes') */}
+{/* ON REMPLACE LE BLOC ENTRE LES LIGNES 565 ET 578 PAR CELUI-CI : */}
 {tab === 'notes' && (
-  <div style={{display: 'flex', gap: 5, marginBottom: 7, flexWrap: 'wrap', alignItems: 'center'}}>
-    <span style={s.filterLabel}>Priorité</span>
-    {[[0, 'Toutes'], [1, '🔴 À Faire maintenant'], [2, '🔵 À Planifier'], [3, '🟡 À Déléguer'], [4, '🟢 À méditer']].map(([k, label]) => (
-      <button 
-        key={k} 
-        style={{...s.filterBtn, ...(filterQ === k ? {background: k === 0 ? '#1a1208' : Q[k]?.color, color: '#fff'} : {})}} 
-        onClick={() => setFilterQ(k)}
-      >
-        {label}
-      </button>
-    ))}
+  <div style={{display: 'flex', gap: 5, marginBottom: 12, flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between'}}>
+    
+    {/* LA PARTIE GAUCHE : LES PRIORITÉS */}
+    <div style={{display: 'flex', gap: 5, alignItems: 'center', flexWrap: 'wrap'}}>
+      <span style={s.filterLabel}>Priorité</span>
+     {[[0, 'Toutes'], [1, '🔴 À Faire maintenant'], [2, '🔵 À Planifier'], [3, '🟡 À Déléguer'], [4, '🟢 À méditer']].map(([k, label]) => (
+        <button 
+          key={k} 
+          style={{...s.filterBtn, ...(filterQ === k ? {background: k === 0 ? '#1a1208' : Q[k]?.color, color: '#fff'} : {})}} 
+          onClick={() => setFilterQ(k)}
+        >
+          {label}
+        </button>
+      ))}
+    </div>
+
+    {/* LE NOUVEAU BOUTON : À DROITE */}
+    <button 
+      onClick={() => setShowDone(!showDone)}
+      style={{...s.btnGhost, padding: '4px 12px', fontSize: 11, borderColor: showDone ? '#c9a84c' : '#e5e0d5', color: showDone ? '#c9a84c' : '#9a8f7a', display: 'flex', alignItems: 'center', gap: 5}}
+    >
+      {showDone ? '📂 Voir les tâches actives' : '✅ Voir terminées'}
+    </button>
   </div>
 )}
 
