@@ -517,9 +517,15 @@ function SettingsView({ session, categories, onCategoriesChange }) {
   }
 
   const saveCategories = async (newCats) => {
-    onCategoriesChange(newCats)
-    await supabase.from('user_settings').upsert({ user_id:session.user.id, categories:newCats })
-  }
+  // On trie par nom avant de sauvegarder et de mettre à jour l'affichage
+  const sorted = [...newCats].sort((a, b) => a.name.localeCompare(b.name))
+  
+  setCategories(sorted)
+  await supabase.from('user_settings').upsert({ 
+    user_id: session.user.id, 
+    categories: sorted 
+  })
+}
 
   return (
     <div style={s.settingsWrap}>
