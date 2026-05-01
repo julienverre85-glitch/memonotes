@@ -933,6 +933,7 @@ const getCatCount = (catId) => {
     </button>
   ))}
 </div>
+      <div style={{ borderTop: '1px solid #e5e0d5', margin: '10px 0 25px', opacity: 0.8 }} />
       {filtered.length === 0 ? (
         <div style={s.empty}>
           <p style={{fontSize: 40}}>📝</p>
