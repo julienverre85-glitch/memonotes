@@ -371,7 +371,7 @@ function NoteModal({ note, categories, onSave, onClose, onNewCategory, currentTa
           {/* SECTION PRIORITÉ : Uniquement pour les tâches */}
           {!isSimpleNote && (
             <>
-              <label style={s.label}>Importance (Eisenhower)</label>
+              <label style={s.label}>Importance / priorité</label>
               <div style={s.quadGrid}>
                 {Object.entries(Q).map(([k,v]) => (
                   <button key={k} style={{...s.quadBtn, borderColor:+k===importance ? v.color : '#e5e0d5', background:+k===importance ? v.color+'18' : '#f8f6f1', color:+k===importance ? v.color : '#9a8f7a'}} onClick={() => setImp(+k)}>
