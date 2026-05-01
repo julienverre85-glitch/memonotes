@@ -981,6 +981,7 @@ const getCatCount = (catId) => {
 
 const s = {
   app:         {display:'flex',flexDirection:'column',minHeight:'100vh',background:'#f8f6f1'},
+  filterPanel: {background: '#f0f4f8',padding: '18px',borderRadius: '16px',marginBottom: '20px',border: '1px solid #e1e8f0',display: 'flex',flexDirection: 'column',gap: 12},
   header:      {position:'sticky',top:0,zIndex:10,background:'#fff',borderBottom:'1px solid #e5e0d5',display:'flex',alignItems:'center',justifyContent:'space-between',padding:'0 20px',height:56,gap:16},
   logo:        {fontFamily:'var(--font-display)',fontSize:22,fontWeight:700,color:'#c9a84c',letterSpacing:'-0.5px',fontStyle:'italic',flexShrink:0},
   nav:         {display:'flex',gap:4},
