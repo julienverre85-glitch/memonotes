@@ -450,12 +450,12 @@ function NoteModal({ note, categories, collaborators, onSave, onClose, onNewCate
     onChange={e => setAssignee(e.target.value)}
   >
     <option value="">Personne</option>
-    {/* On affiche les noms de ta liste ici */}
-   {collaborators && collaborators.map(name => (
-  <option key={name} value={name}>{name}</option>
-))}
+    {/* CORRECTION ICI : On utilise collaborators directement */}
+    {collaborators && collaborators.map(name => (
+      <option key={name} value={name}>{name}</option>
+    ))}
   </select>
-</div> [cite: 65, 66]
+</div>
   </div>
 )}
 
@@ -612,39 +612,40 @@ function SettingsView({ session, categories, onCategoriesChange, collaborators, 
     } catch(e) { setPushMsg('Erreur : '+e.message); setPushStatus('error') }
   }
 
-  return (
+return (
     <div style={s.settingsWrap}>
       <h2 style={s.sectionTitle}>Paramètres</h2>
       <CatSettings categories={categories} onChange={onCategoriesChange} />
+      
+      {/* BLOC COLLABORATEURS CORRIGÉ */}
       <div style={s.settingsCard}>
-  <h3 style={s.settingsCardTitle}>👥 Liste des collaborateurs</h3>
-  <div style={{display:'flex', gap:8, marginBottom:12}}>
-    <input 
-      id="new-collab" 
-      placeholder="Nom du collaborateur..." 
-      style={{...s.input, flex:1}}
-      onKeyDown={e => {
-        if(e.key === 'Enter' && e.target.value.trim()){
-          onCollaboratorsChange([...collaborators, e.target.value.trim()])
-          e.target.value = ''
-        }
-      }}
-    />
-  </div>
-  <div style={{display:'flex', flexWrap:'wrap', gap:6}}>
- {collaborators && collaborators.map(name => (
-  <option key={name} value={name}>{name}</option>
-))}
-        <button 
-          onClick={() => onCollaboratorsChange(collaborators.filter(n => n !== name))}
-          style={{border:'none', background:'transparent', cursor:'pointer', fontSize:14}}
-        >
-          ×
-        </button>
-      </span>
-    ))}
-  </div>
-</div>
+        <h3 style={s.settingsCardTitle}>👥 Liste des collaborateurs</h3>
+        <div style={{display:'flex', gap:8, marginBottom:12}}>
+          <input 
+            placeholder="Nom du collaborateur..." 
+            style={{...s.input, flex:1}}
+            onKeyDown={e => {
+              if(e.key === 'Enter' && e.target.value.trim()){
+                onCollaboratorsChange([...collaborators, e.target.value.trim()]);
+                e.target.value = '';
+              }
+            }}
+          />
+        </div>
+        <div style={{display:'flex', flexWrap:'wrap', gap:6}}>
+          {collaborators.map(name => (
+            <span key={name} style={{background:'#f0ece3', padding:'4px 10px', borderRadius:20, fontSize:12, display:'flex', alignItems:'center', gap:8}}>
+              {name}
+              <button 
+                onClick={() => onCollaboratorsChange(collaborators.filter(n => n !== name))}
+                style={{border:'none', background:'transparent', cursor:'pointer', fontSize:14}}
+              >
+                ×
+              </button>
+            </span>
+          ))}
+        </div>
+      </div>
       <div style={s.settingsCard}>
         <h3 style={s.settingsCardTitle}>🔔 Notifications push</h3>
         <p style={{color:'#7a6f5e',marginBottom:16,fontSize:14,lineHeight:1.5}}>Autorise les notifications pour recevoir des rappels directement sur cet appareil.</p>
