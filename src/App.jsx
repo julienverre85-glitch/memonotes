@@ -289,10 +289,12 @@ function NoteCard({ note, categories, onEdit, onDelete }) {
     : null;
   
   const noteColors = ['#fff9c4', '#e1f5fe', '#f3e5f5', '#e8f5e9', '#fff3e0'];
-  const pastelBg = isTask ? q.light : noteColors[note.id.charCodeAt(0) % noteColors.length];
+  const pastelBg = isTask ? q.light : '#ffffff';
 
   return (
-    <div style={{...s.card, boxShadow: isTask ? 'none' : '2px 4px 10px rgba(0,0,0,0.05)'}}>
+    <div style={{...s.card, boxShadow: isTask ? 'none' : '2px 4px 10px rgba(0,0,0,0.05)'
+                border: isTask ? '1px solid #e5e0d5' : '1px solid #e5e0d5'
+                }}>
       {isTask && (
         <div style={{...s.cardBanner, background:q.color}}>
           <span style={s.bannerEmoji}>{q.emoji}</span>
@@ -933,7 +935,7 @@ const getCatCount = (catId) => {
     </button>
   ))}
 </div>
-      <div style={{ borderTop: '1px solid #e5e0d5', margin: '10px 0 25px', opacity: 0.8 }} />
+      <div style={{ borderTop: '2px solid #e5e0d5', margin: '10px 0 25px', opacity: 0.9 }} />
       {filtered.length === 0 ? (
         <div style={s.empty}>
           <p style={{fontSize: 40}}>📝</p>
