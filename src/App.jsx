@@ -331,7 +331,7 @@ function NoteCard({ note, categories, onEdit, onDelete }) {
 }
 
 /* ──────────────────── NOTE MODAL ──────────────────── */
-function NoteModal({ note, categories, onSave, onClose, onNewCategory, currentTab }) {
+function NoteModal({ note, categories, collaborators, onSave, onClose, onNewCategory, currentTab }) {
   const [title, setTitle]           = useState(note?.title || '')
   const [content, setContent]       = useState(note?.content || '')
   const [importance, setImp]        = useState(note?.importance || 1)
@@ -577,7 +577,7 @@ function CalendarView({ notes }) {
 }
 
 /* ──────────────────── SETTINGS ──────────────────── */
-function SettingsView({ session, categories, onCategoriesChange }) {
+function SettingsView({ session, categories, onCategoriesChange, collaborators, onCollaboratorsChange }) {
   const [pushStatus, setPushStatus] = useState('idle')
   const [pushMsg, setPushMsg]       = useState('')
 
@@ -618,9 +618,9 @@ function SettingsView({ session, categories, onCategoriesChange }) {
     />
   </div>
   <div style={{display:'flex', flexWrap:'wrap', gap:6}}>
-    {collaborators.map(name => (
-      <span key={name} style={{background:'#f0ece3', padding:'4px 10px', borderRadius:20, fontSize:12, display:'flex', alignItems:'center', gap:8}}>
-        {name}
+ {collaborators && collaborators.map(name => (
+  <option key={name} value={name}>{name}</option>
+))}
         <button 
           onClick={() => onCollaboratorsChange(collaborators.filter(n => n !== name))}
           style={{border:'none', background:'transparent', cursor:'pointer', fontSize:14}}
@@ -888,7 +888,15 @@ const getCatCount = (catId) => {
   )}
 
   {tab === 'calendar' && <CalendarView notes={notes} />}
-  {tab === 'settings' && <SettingsView session={session} categories={categories} onCategoriesChange={saveCategories} />}
+  {tab === 'settings' && (
+  <SettingsView 
+    session={session} 
+    categories={categories} 
+    onCategoriesChange={saveCategories}
+    collaborators={collaborators}           // Ajoute ça
+    onCollaboratorsChange={saveCollaborators} // Et ça
+  />
+)}
 </main>
 
      // Trouve cette ligne en bas du fichier et remplace-la par :
@@ -896,10 +904,11 @@ const getCatCount = (catId) => {
   <NoteModal 
     note={modal === 'new' ? null : modal} 
     categories={categories} 
+    collaborators={collaborators} // Ajoute cette ligne
     onSave={saveNote} 
     onClose={() => setModal(null)}
     onNewCategory={saveCategories}
-    currentTab={tab} // <-- Ajoute cette ligne pour envoyer l'onglet actuel
+    currentTab={tab}
   />
 )}
     </div>
