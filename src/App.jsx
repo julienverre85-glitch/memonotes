@@ -413,7 +413,7 @@ function NoteModal({ note, categories, collaborators, onSave, onClose, onNewCate
 
           {!isSimpleNote && (
             <div style={{marginBottom: 12}}>
-              <label style={s.label}>Importance (Eisenhower)</label>
+              <label style={s.label}>Priorité</label>
               <div style={s.quadGrid}>
                 {Object.entries(Q).map(([k,v]) => (
                   <button key={k} style={{...s.quadBtn, borderColor:+k===importance ? v.color : '#e5e0d5', background:+k===importance ? v.color+'18' : '#f8f6f1', color:+k===importance ? v.color : '#9a8f7a'}} onClick={() => setImp(+k)}>
@@ -437,7 +437,7 @@ function NoteModal({ note, categories, collaborators, onSave, onClose, onNewCate
           )}
 
           <div style={{marginBottom: 12}}>
-            <label style={s.label}>Collaborateurs</label>
+            <label style={s.label}>Qui ?</label>
             <div style={{...s.input, minHeight: 40, padding: '8px 10px', background: '#f8f6f1'}}>
               {collaborators && collaborators.map(name => (
                 <label key={name} style={{display:'flex', alignItems:'center', gap:8, fontSize:13, marginBottom:4, cursor:'pointer', color:'#1a1208'}}>
@@ -614,7 +614,7 @@ return (
       
       {/* BLOC COLLABORATEURS CORRIGÉ */}
      <div style={s.settingsCard}>
-  <h3 style={s.settingsCardTitle}>👥 Liste des collaborateurs</h3>
+  <h3 style={s.settingsCardTitle}>👥 L'Équipe</h3>
   
   {/* AJOUT DU BOUTON + ICI */}
   <div style={{display:'flex', gap:8, marginBottom:12}}>
@@ -885,7 +885,7 @@ const getCatCount = (catId) => {
 )}
 
       <div style={{display: 'flex', gap: 5, marginBottom: 20, flexWrap: 'wrap', alignItems: 'center'}}>
-        <span style={s.filterLabel}>Catégorie</span>
+        <span style={s.filterLabel}>Catégories</span>
         <button 
           onClick={() => setFilterCat(null)} 
           style={{...s.filterBtn, ...(filterCat === null ? {background: '#1a1208', color: '#fff'} : {})}}
@@ -913,7 +913,7 @@ const getCatCount = (catId) => {
 })}
       </div>
  <div style={{display: 'flex', gap: 5, marginBottom: 20, flexWrap: 'wrap', alignItems: 'center'}}>
-  <span style={s.filterLabel}>Par Personne</span>
+  <span style={s.filterLabel}>Équipe</span>
   <button 
     onClick={() => setFilterAssignee(null)} 
     style={{...s.filterBtn, ...(filterAssignee === null ? {background: '#1a1208', color: '#fff'} : {})}}
