@@ -319,12 +319,16 @@ function NoteCard({ note, categories, onEdit, onDelete }) {
           </div>
         )}
 
-        {/* AFFICHAGE DU COLLABORATEUR */}
-        {isTask && note.assignee && (
-          <div style={{fontSize: 10, color: '#1a1208', marginBottom: 8, display: 'flex', alignItems: 'center', gap: 4}}>
-            👤 <strong>{note.assignee}</strong>
-          </div>
-        )}
+       {/* AFFICHAGE DES COLLABORATEURS */}
+{isTask && note.assignees && note.assignees.length > 0 && (
+  <div style={{display: 'flex', flexWrap: 'wrap', gap: 4, marginBottom: 8}}>
+    {note.assignees.map(name => (
+      <span key={name} style={{fontSize: 10, background: 'rgba(26, 18, 8, 0.1)', padding: '2px 8px', borderRadius: 10, color: '#1a1208', display: 'flex', alignItems: 'center', gap: 3}}>
+        👤 {name}
+      </span>
+    ))}
+  </div>
+)}
 
         <div style={s.cardFooter}>
           {/* AFFICHAGE DU RAPPEL (S'il existe) */}
@@ -355,7 +359,7 @@ function NoteModal({ note, categories, collaborators, onSave, onClose, onNewCate
   const [pushNotify, setPushNotify]   = useState(note?.push_notify ?? true)
   const [saving, setSaving] = useState(false)
   const [status, setStatus] = useState(note?.status || 'todo')
-  const [assignee, setAssignee] = useState(note?.assignee || '')
+  const [assignees, setAssignees] = useState(note?.assignees || [])
 
   // 1. On utilise localType pour piloter TOUTE la modal
   const [localType, setLocalType] = useState(note?.type || (currentTab === 'simple_notes' ? 'note' : 'task'));
@@ -381,7 +385,7 @@ function NoteModal({ note, categories, collaborators, onSave, onClose, onNewCate
       push_notify: isSimpleNote ? false : pushNotify,
       // ON LES REMET ICI, AVANT LA FERMETURE :
       status: isSimpleNote ? 'todo' : status,
-      assignee: isSimpleNote ? null : assignee.trim()
+      assignees: isSimpleNote ? [] : assignees
     })
     
     setSaving(false)
@@ -443,20 +447,24 @@ function NoteModal({ note, categories, collaborators, onSave, onClose, onNewCate
       </select>
     </div>
     <div style={{flex:1}}>
-  <label style={s.label}>Collaborateur</label>
-  <select 
-    style={{...s.input, padding:'7px 10px'}} 
-    value={assignee} 
-    onChange={e => setAssignee(e.target.value)}
-  >
-    <option value="">Personne</option>
-    {/* CORRECTION ICI : On utilise collaborators directement */}
+  <label style={s.label}>Collaborateurs</label>
+  <div style={{...s.input, minHeight: 40, padding: '8px 10px'}}>
     {collaborators && collaborators.map(name => (
-      <option key={name} value={name}>{name}</option>
+      <label key={name} style={{display:'flex', alignItems:'center', gap:8, fontSize:13, marginBottom:4, cursor:'pointer', color:'#1a1208'}}>
+        <input 
+          type="checkbox" 
+          checked={assignees.includes(name)}
+          onChange={(e) => {
+            if(e.target.checked) setAssignees([...assignees, name])
+            else setAssignees(assignees.filter(n => n !== name))
+          }}
+        />
+        {name}
+      </label>
     ))}
-  </select>
-</div>
+    {(!collaborators || collaborators.length === 0) && <span style={{fontSize:12, color:'#9a8f7a'}}>Aucun collaborateur créé</span>}
   </div>
+</div>
 )}
 
           <label style={s.label}>Catégories</label>
@@ -973,12 +981,12 @@ const s = {
   filterBtn:   {background:'#fff',border:'1px solid #e5e0d5',color:'#9a8f7a',padding:'3px 12px',borderRadius:20,fontSize:12,cursor:'pointer',fontFamily:'inherit'},
   noteGrid:    {display:'grid',gridTemplateColumns:'repeat(auto-fill, minmax(280px, 1fr))',gap:16},
   empty:       {textAlign:'center',marginTop:60},
-  card:        {borderRadius:12,overflow:'hidden',border:'1px solid #e5e0d5',background:'#fff'},
+  card:        {borderRadius:12,overflow:'hidden',border:'1px solid #e5e0d5',background:'#fff', display: 'flex', flexDirection: 'column'},
   cardBanner:  {display:'flex',alignItems:'center',gap:8,padding:'8px 14px'},
   bannerEmoji: {fontSize:13},
   bannerLabel: {fontSize:11,fontWeight:600,color:'rgba(255,255,255,0.95)',flex:1},
   bannerDesc:  {fontSize:9,color:'rgba(255,255,255,0.75)',background:'rgba(0,0,0,0.2)',padding:'2px 6px',borderRadius:10},
-  cardBody:    {padding:'13px 15px 11px'},
+  cardBody:    {padding:'13px 15px 11px' flex: 1},
   cardTitle:   {fontFamily:'var(--font-display)',fontSize:15,fontWeight:600,color:'#1a1208',marginBottom:5},
   cardContent: {fontSize:12,color:'#7a6f5e',lineHeight:1.5,marginBottom:8,display:'-webkit-box',WebkitLineClamp:3,WebkitBoxOrient:'vertical',overflow:'hidden'},
   cardFooter:  {display:'flex',alignItems:'center',justifyContent:'space-between',gap:8},
