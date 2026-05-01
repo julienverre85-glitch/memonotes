@@ -319,8 +319,8 @@ function NoteCard({ note, categories, onEdit, onDelete }) {
           </div>
         )}
 
-       {/* AFFICHAGE DES COLLABORATEURS */}
-{isTask && note.assignees && note.assignees.length > 0 && (
+{/* On affiche les collaborateurs pour TOUT LE MONDE (Notes et Tâches) */}
+{note.assignees && note.assignees.length > 0 && (
   <div style={{display: 'flex', flexWrap: 'wrap', gap: 4, marginBottom: 8}}>
     {note.assignees.map(name => (
       <span key={name} style={{fontSize: 10, background: 'rgba(26, 18, 8, 0.1)', padding: '2px 8px', borderRadius: 10, color: '#1a1208', display: 'flex', alignItems: 'center', gap: 3}}>
@@ -431,39 +431,37 @@ function NoteModal({ note, categories, collaborators, onSave, onClose, onNewCate
             </>
           )}
 
-          {!isSimpleNote && (
-            <div style={{display:'flex', gap:10}}>
-              {/* STATUT */}
-              <div style={{flex:1}}>
-                <label style={s.label}>Statut</label>
-                <select value={status} onChange={e => setStatus(e.target.value)} style={{...s.input, padding:'7px 10px'}}>
-                  <option value="todo">⏳ À faire</option>
-                  <option value="doing">🚀 En cours</option>
-                  <option value="done">✅ Terminé</option>
-                </select>
-              </div>
+          {/* On garde le Statut uniquement pour les tâches */}
+{!isSimpleNote && (
+  <div style={{marginBottom: 12}}>
+    <label style={s.label}>Statut</label>
+    <select value={status} onChange={e => setStatus(e.target.value)} style={{...s.input, padding:'7px 10px'}}>
+      <option value="todo">⏳ À faire</option>
+      <option value="doing">🚀 En cours</option>
+      <option value="done">✅ Terminé</option>
+    </select>
+  </div>
+)}
 
-              {/* MULTI-COLLABORATEURS */}
-              <div style={{flex:1}}>
-                <label style={s.label}>Collaborateurs</label>
-                <div style={{...s.input, minHeight: 40, padding: '8px 10px', background: '#f8f6f1'}}>
-                  {collaborators && collaborators.map(name => (
-                    <label key={name} style={{display:'flex', alignItems:'center', gap:8, fontSize:13, marginBottom:4, cursor:'pointer', color:'#1a1208'}}>
-                      <input 
-                        type="checkbox" 
-                        checked={assignees.includes(name)}
-                        onChange={(e) => {
-                          if(e.target.checked) setAssignees([...assignees, name])
-                          else setAssignees(assignees.filter(n => n !== name))
-                        }}
-                      />
-                      {name}
-                    </label>
-                  ))}
-                  {(!collaborators || collaborators.length === 0) && <span style={{fontSize:11, color:'#9a8f7a'}}>Aucun nom créé</span>}
-                </div>
-              </div>
-            </div>
+{/* MAIS on sort les Collaborateurs pour qu'ils soient visibles PARTOUT */}
+<div style={{marginBottom: 12}}>
+  <label style={s.label}>Collaborateurs</label>
+  <div style={{...s.input, minHeight: 40, padding: '8px 10px', background: '#f8f6f1'}}>
+    {collaborators && collaborators.map(name => (
+      <label key={name} style={{display:'flex', alignItems:'center', gap:8, fontSize:13, marginBottom:4, cursor:'pointer', color:'#1a1208'}}>
+        <input 
+          type="checkbox" 
+          checked={assignees.includes(name)}
+          onChange={(e) => {
+            if(e.target.checked) setAssignees([...assignees, name])
+            else setAssignees(assignees.filter(n => n !== name))
+          }}
+        />
+        {name}
+      </label>
+    ))}
+  </div>
+</div>
           )}
 
           <label style={s.label}>Catégories</label>
@@ -721,6 +719,7 @@ export default function App() {
   const [search, setSearch]         = useState('')
   const [showDone, setShowDone]     = useState(false)
   const [collaborators, setCollaborators] = useState([])
+  const [filterAssignee, setFilterAssignee] = useState(null);
   
   useEffect(() => {
     supabase.auth.getSession().then(({data:{session}}) => { setSession(session); setLoading(false) })
@@ -819,6 +818,7 @@ export default function App() {
   .filter(n => filterQ === 0 || n.importance === filterQ)
   .filter(n => !filterCat || (n.cats || []).includes(filterCat))
   .filter(n => !search || n.title.toLowerCase().includes(search.toLowerCase()) || (n.content || '').toLowerCase().includes(search.toLowerCase()))
+  .filter(n => !filterAssignee || (n.assignees || []).includes(filterAssignee))
   // LE TRI INTELLIGENT
   .sort((a, b) => {
   if (tab === 'notes') { // Rappel : l'onglet s'appelle 'notes' pour les Tâches
@@ -866,7 +866,6 @@ const getCatCount = (catId) => {
       </div>
 
       {/* On n'affiche la ligne Priorité QUE si on est dans l'onglet Tâches ('notes') */}
-{/* ON REMPLACE LE BLOC ENTRE LES LIGNES 565 ET 578 PAR CELUI-CI : */}
 {tab === 'notes' && (
   <div style={{display: 'flex', gap: 5, marginBottom: 12, flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between'}}>
     
@@ -904,6 +903,28 @@ const getCatCount = (catId) => {
         </button>
        {categories.map(c => {
   const count = getCatCount(c.id); // On récupère le nombre ici
+
+  <div style={{display: 'flex', gap: 5, marginBottom: 20, flexWrap: 'wrap', alignItems: 'center'}}>
+  <span style={s.filterLabel}>Par Personne</span>
+  <button 
+    onClick={() => setFilterAssignee(null)} 
+    style={{...s.filterBtn, ...(filterAssignee === null ? {background: '#1a1208', color: '#fff'} : {})}}
+  >
+    Tous
+  </button>
+  {collaborators.map(name => (
+    <button 
+      key={name} 
+      onClick={() => setFilterAssignee(filterAssignee === name ? null : name)} 
+      style={{
+        ...s.filterBtn, 
+        ...(filterAssignee === name ? {background: '#c9a84c', color: '#fff', borderColor: '#c9a84c'} : {})
+      }}
+    >
+      👤 {name}
+    </button>
+  ))}
+</div>
   
   return (
     <button 
