@@ -274,21 +274,31 @@ function CatDropdown({ categories, selected, onChange, onNewCategory }) {
 
 /* ──────────────────── NOTE CARD ──────────────────── */
 function NoteCard({ note, categories, onEdit, onDelete }) {
-  const q = Q[note.importance]
-  const hasReminder = !!note.reminder_at
-  const reminderDate = hasReminder ? new Date(note.reminder_at) : null
-  const isPast = hasReminder && reminderDate < new Date()
-  const noteCats = (note.cats||[]).map(id => categories.find(c => c.id===id)).filter(Boolean)
+  const isTask = note.type !== 'note';
+  const q = Q[note.importance];
+  const noteCats = (note.cats||[]).map(id => categories.find(c => c.id===id)).filter(Boolean);
+  
+  // Formatage de la date de création
+  const dateStr = new Date(note.created_at).toLocaleString('fr-FR', {
+    day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit'
+  });
+
   return (
-    <div style={{...s.card, animation:'fadeIn 0.3s ease'}}>
-      <div style={{...s.cardBanner, background:q.color}}>
-        <span style={s.bannerEmoji}>{q.emoji}</span>
-        <span style={s.bannerLabel}>{q.label}</span>
-        <span style={s.bannerDesc}>{q.desc}</span>
-      </div>
-      <div style={{...s.cardBody, background:q.light}}>
+    <div style={s.card}>
+      {isTask && (
+        <div style={{...s.cardBanner, background:q.color}}>
+          <span style={s.bannerEmoji}>{q.emoji}</span>
+          <span style={s.bannerLabel}>{q.label}</span>
+        </div>
+      )}
+      <div style={{...s.cardBody, background: isTask ? q.light : '#fff'}}>
         <h3 style={s.cardTitle}>{note.title}</h3>
+        
+        {/* On affiche la date de création en petit sous le titre */}
+        <p style={{fontSize: 9, color: '#9a8f7a', marginBottom: 8}}>Créé le {dateStr}</p>
+        
         {note.content && <p style={s.cardContent}>{note.content}</p>}
+        
         {noteCats.length > 0 && (
           <div style={{display:'flex',gap:4,flexWrap:'wrap',marginBottom:8}}>
             {noteCats.map(c => (
@@ -297,13 +307,7 @@ function NoteCard({ note, categories, onEdit, onDelete }) {
           </div>
         )}
         <div style={s.cardFooter}>
-          {hasReminder && (
-            <span style={{...s.reminderBadge, color: isPast ? '#ef4444' : '#c9a84c'}}>
-              ⏰ {reminderDate.toLocaleDateString('fr-FR',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})}
-              {isPast && ' · passé'}
-            </span>
-          )}
-          <div style={s.cardActions}>
+          <div style={{...s.cardActions, marginLeft: 'auto'}}>
             <button style={s.iconBtn} onClick={() => onEdit(note)}>✏️</button>
             <button style={s.iconBtn} onClick={() => onDelete(note.id)}>🗑️</button>
           </div>
@@ -314,7 +318,7 @@ function NoteCard({ note, categories, onEdit, onDelete }) {
 }
 
 /* ──────────────────── NOTE MODAL ──────────────────── */
-function NoteModal({ note, categories, onSave, onClose, onNewCategory }) {
+function NoteModal({ note, categories, onSave, onClose, onNewCategory, currentTab }) {
   const [title, setTitle]           = useState(note?.title || '')
   const [content, setContent]       = useState(note?.content || '')
   const [importance, setImp]        = useState(note?.importance || 1)
@@ -323,17 +327,27 @@ function NoteModal({ note, categories, onSave, onClose, onNewCategory }) {
   const [emailNotify, setEmailNotify] = useState(note?.email_notify ?? true)
   const [pushNotify, setPushNotify]   = useState(note?.push_notify ?? true)
   const [saving, setSaving] = useState(false)
-  const q = Q[importance]
+
+  // Détection du mode : Est-ce une note simple ?
+  // On regarde soit le type de la note existante, soit l'onglet où on se trouve
+  const isSimpleNote = note?.type === 'note' || (currentTab === 'simple_notes' && !note?.id);
+  
+  // Si c'est une tâche, on prend la couleur de priorité. Si c'est une note, une couleur neutre.
+  const headerColor = isSimpleNote ? '#c9a84c' : Q[importance].color;
 
   const save = async () => {
     if (!title.trim()) return
     setSaving(true)
     await onSave({
       ...(note?.id ? {id:note.id} : {}),
-      title: title.trim(), content: content.trim(),
-      importance, cats,
-      reminder_at: reminderAt || null,
-      email_notify: emailNotify, push_notify: pushNotify,
+      title: title.trim(), 
+      content: content.trim(),
+      importance: isSimpleNote ? 4 : importance, // Par défaut priorité basse pour les notes
+      cats,
+      reminder_at: isSimpleNote ? null : (reminderAt || null),
+      email_notify: isSimpleNote ? false : emailNotify, 
+      push_notify: isSimpleNote ? false : pushNotify,
+      type: isSimpleNote ? 'note' : 'task'
     })
     setSaving(false)
   }
@@ -341,49 +355,57 @@ function NoteModal({ note, categories, onSave, onClose, onNewCategory }) {
   return (
     <div style={s.overlay} onClick={e => e.target===e.currentTarget && onClose()}>
       <div style={{...s.modal, animation:'slideUp 0.25s ease'}}>
-        <div style={{...s.modalHeader, background:q.color}}>
+        
+        {/* Header avec couleur dynamique */}
+        <div style={{...s.modalHeader, background: headerColor}}>
           <span style={{fontFamily:'var(--font-display)',fontSize:18,fontWeight:600,color:'#fff'}}>
-            {note?.id ? 'Modifier la note' : 'Nouvelle note'}
+            {note?.id ? 'Modifier' : 'Nouveau'} {isSimpleNote ? 'Note' : 'Tâche'}
           </span>
           <button style={{...s.iconBtn,color:'#fff',fontSize:20}} onClick={onClose}>×</button>
         </div>
+
         <div style={s.modalBody}>
           <input style={{...s.input,fontSize:15,fontWeight:500}} placeholder="Titre *" value={title} onChange={e => setTitle(e.target.value)} />
           <textarea style={{...s.input,...s.textarea}} placeholder="Contenu (optionnel)" value={content} onChange={e => setContent(e.target.value)} />
 
-          <label style={s.label}>Importance (Eisenhower)</label>
-          <div style={s.quadGrid}>
-            {Object.entries(Q).map(([k,v]) => (
-              <button key={k} style={{...s.quadBtn, borderColor:+k===importance ? v.color : '#e5e0d5', background:+k===importance ? v.color+'18' : '#f8f6f1', color:+k===importance ? v.color : '#9a8f7a'}} onClick={() => setImp(+k)}>
-                <span style={{fontSize:18}}>{v.emoji}</span>
-                <span style={{fontSize:10,lineHeight:1.3,fontWeight:600}}>{v.label}</span>
-                <span style={{fontSize:9,opacity:0.7}}>{v.desc}</span>
-              </button>
-            ))}
-          </div>
+          {/* SECTION PRIORITÉ : Uniquement pour les tâches */}
+          {!isSimpleNote && (
+            <>
+              <label style={s.label}>Importance (Eisenhower)</label>
+              <div style={s.quadGrid}>
+                {Object.entries(Q).map(([k,v]) => (
+                  <button key={k} style={{...s.quadBtn, borderColor:+k===importance ? v.color : '#e5e0d5', background:+k===importance ? v.color+'18' : '#f8f6f1', color:+k===importance ? v.color : '#9a8f7a'}} onClick={() => setImp(+k)}>
+                    <span style={{fontSize:18}}>{v.emoji}</span>
+                    <span style={{fontSize:10,lineHeight:1.3,fontWeight:600}}>{v.label}</span>
+                  </button>
+                ))}
+              </div>
+            </>
+          )}
 
           <label style={s.label}>Catégories</label>
-          <CatDropdown 
-  categories={categories} 
-  selected={cats} 
-  onChange={setCats} 
-  onNewCategory={onNewCategory} // <-- Doit correspondre au nom juste au-dessus
-/>
+          <CatDropdown categories={categories} selected={cats} onChange={setCats} onNewCategory={onNewCategory} />
 
-          <label style={s.label}>Date & heure de rappel</label>
-          <DateTimePicker value={reminderAt} onChange={setReminderAt} />
+          {/* SECTION RAPPEL : Uniquement pour les tâches */}
+          {!isSimpleNote && (
+            <>
+              <label style={s.label}>Date & heure de rappel</label>
+              <DateTimePicker value={reminderAt} onChange={setReminderAt} />
 
-          {reminderAt && (
-            <div style={s.notifRow}>
-              <label style={s.checkLabel}><input type="checkbox" checked={emailNotify} onChange={e => setEmailNotify(e.target.checked)} style={{accentColor:'#c9a84c'}} /> Rappel par e-mail</label>
-              <label style={s.checkLabel}><input type="checkbox" checked={pushNotify} onChange={e => setPushNotify(e.target.checked)} style={{accentColor:'#c9a84c'}} /> Notification push</label>
-            </div>
+              {reminderAt && (
+                <div style={s.notifRow}>
+                  <label style={s.checkLabel}><input type="checkbox" checked={emailNotify} onChange={e => setEmailNotify(e.target.checked)} style={{accentColor:'#c9a84c'}} /> E-mail</label>
+                  <label style={s.checkLabel}><input type="checkbox" checked={pushNotify} onChange={e => setPushNotify(e.target.checked)} style={{accentColor:'#c9a84c'}} /> Push</label>
+                </div>
+              )}
+            </>
           )}
         </div>
+
         <div style={s.modalFooter}>
           <button style={s.btnGhost} onClick={onClose}>Annuler</button>
-          <button style={{...s.btn, opacity:saving?0.6:1, background:q.color, color:'#fff'}} onClick={save} disabled={saving}>
-            {saving ? '…' : note?.id ? 'Enregistrer' : 'Créer'}
+          <button style={{...s.btn, opacity:saving?0.6:1, background: headerColor, color:'#fff'}} onClick={save} disabled={saving}>
+            {saving ? '…' : 'Enregistrer'}
           </button>
         </div>
       </div>
@@ -604,30 +626,17 @@ export default function App() {
 }
 
   const saveNote = async (payload) => {
-  // On sépare l'ID du reste des données pour ne pas perturber Supabase
+  const type = tab === 'simple_notes' ? 'note' : 'task';
   const { id, ...dataToSave } = payload;
   
+  const finalData = { ...dataToSave, type: id ? undefined : type }; // On garde le type d'origine si c'est un edit
+
   if (id) {
-    // Modification d'une note existante
-    await supabase
-      .from('notes')
-      .update({
-        ...dataToSave,
-        updated_at: new Date().toISOString()
-      })
-      .eq('id', id);
+    await supabase.from('notes').update({...finalData, updated_at:new Date().toISOString()}).eq('id',id)
   } else {
-    // Création d'une nouvelle note
-    await supabase
-      .from('notes')
-      .insert({
-        ...dataToSave,
-        user_id: session.user.id
-      });
+    await supabase.from('notes').insert({...finalData, type, user_id:session.user.id})
   }
-  
-  await fetchNotes(); 
-  setModal(null);
+  await fetchNotes(); setModal(null)
 }
 
   const deleteNote = async (id) => {
@@ -645,19 +654,29 @@ export default function App() {
   if (!session) return <AuthScreen onAuth={setSession} />
 
   const filtered = notes
-    .filter(n => filterQ===0 || n.importance===filterQ)
-    .filter(n => !filterCat || (n.cats||[]).includes(filterCat))
-    .filter(n => !search || n.title.toLowerCase().includes(search.toLowerCase()) || (n.content||'').toLowerCase().includes(search.toLowerCase()))
-
+  .filter(n => {
+    if (tab === 'notes') return n.type === 'task';
+    if (tab === 'simple_notes') return n.type === 'note';
+    return true; // Pour le calendrier
+  })
+  .filter(n => filterQ === 0 || n.importance === filterQ)
+  .filter(n => !filterCat || (n.cats || []).includes(filterCat))
+  .filter(n => !search || n.title.toLowerCase().includes(search.toLowerCase()) || (n.content || '').toLowerCase().includes(search.toLowerCase()))
+  
   return (
     <div style={s.app}>
       <header style={s.header}>
         <h1 style={s.logo}>Mémo</h1>
         <nav style={s.nav}>
-          {[['notes','📋 Notes'],['calendar','📅 Calendrier'],['settings','⚙️']].map(([id,label]) => (
-            <button key={id} style={{...s.navBtn,...(tab===id?s.navBtnActive:{})}} onClick={() => setTab(id)}>{label}</button>
-          ))}
-        </nav>
+  {[
+    ['notes', '📋 Tâches'],        // L'ancien "Notes" devient "Tâches"
+    ['simple_notes', '📝 Notes'], // Le nouveau coin pour les notes simples
+    ['calendar', '📅 Calendrier'], 
+    ['settings', '⚙️']
+  ].map(([id, label]) => (
+    <button key={id} style={{...s.navBtn,...(tab===id?s.navBtnActive:{})}} onClick={() => setTab(id)}>{label}</button>
+  ))}
+</nav>
       </header>
 
       <main style={s.main}>
@@ -695,7 +714,8 @@ export default function App() {
     categories={categories} 
     onSave={saveNote} 
     onClose={() => setModal(null)}
-    onNewCategory={saveCategories} // <-- On ajoute cette ligne
+    onNewCategory={saveCategories}
+    currentTab={tab} // <-- Ajoute cette ligne pour envoyer l'onglet actuel
   />
 )}
     </div>
