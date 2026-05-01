@@ -842,147 +842,102 @@ const getCatCount = (catId) => {
 </nav>
       </header>
 
-      <main style={s.main}>
-  {/* ON DIT AU CODE : Affiche ce bloc pour les Tâches OU pour les Notes */}
-  {(tab === 'notes' || tab === 'simple_notes') && (
-    <>
-      <div style={s.filterPanel}>
-      <div style={s.toolbar}>
-        <input 
-          style={{...s.input, flex: 1, height: 38}} 
-          placeholder="Rechercher…" 
-          value={search} 
-          onChange={e => setSearch(e.target.value)} 
+     <main style={s.main}>
+        {(tab === 'notes' || tab === 'simple_notes') && (
+          <>
+            {/* LE BANDEAU GRIS BLEUTÉ (filterPanel) */}
+            <div style={s.filterPanel}>
+              <div style={s.toolbar}>
+                <input 
+                  style={{...s.input, flex: 1, height: 38, background: '#fff'}} 
+                  placeholder="Rechercher…" 
+                  value={search} 
+                  onChange={e => setSearch(e.target.value)} 
+                />
+                <button style={{...s.btn, whiteSpace: 'nowrap'}} onClick={() => setModal('new')}>
+                  ＋ {tab === 'simple_notes' ? 'Note' : 'Tâche'}
+                </button>
+              </div>
+
+              {tab === 'notes' && (
+                <div style={{display: 'flex', gap: 5, flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between'}}>
+                  <div style={{display: 'flex', gap: 5, alignItems: 'center', flexWrap: 'wrap'}}>
+                    <span style={s.filterLabel}>Priorité</span>
+                    {[[0, 'Toutes'], [1, '🔴'], [2, '🔵'], [3, '🟡'], [4, '🟢']].map(([k, label]) => (
+                      <button 
+                        key={k} 
+                        style={{...s.filterBtn, ...(filterQ === k ? {background: k === 0 ? '#1a1208' : Q[k]?.color, color: '#fff'} : {})}} 
+                        onClick={() => setFilterQ(k)}
+                      >
+                        {label}
+                      </button>
+                    ))}
+                  </div>
+                  <button 
+                    onClick={() => setShowDone(!showDone)}
+                    style={{...s.btnGhost, padding: '4px 12px', fontSize: 11, borderColor: showDone ? '#c9a84c' : '#e5e0d5', color: showDone ? '#c9a84c' : '#9a8f7a', display: 'flex', alignItems: 'center', gap: 5}}
+                  >
+                    {showDone ? '📂 Actives' : '✅ Terminées'}
+                  </button>
+                </div>
+              )}
+
+              <div style={{display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center'}}>
+                <span style={s.filterLabel}>Catégories</span>
+                <button onClick={() => setFilterCat(null)} style={{...s.filterBtn, ...(filterCat === null ? {background: '#1a1208', color: '#fff'} : {})}}>Toutes</button>
+                {categories.map(c => (
+                  <button key={c.id} onClick={() => setFilterCat(filterCat === c.id ? null : c.id)} style={{...s.filterBtn, background: filterCat === c.id ? c.color : c.color + '15', color: filterCat === c.id ? '#fff' : c.color, borderColor: c.color + '55'}}>{c.name}</button>
+                ))}
+              </div>
+
+              <div style={{display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center'}}>
+                <span style={s.filterLabel}>Qui ?</span>
+                <button onClick={() => setFilterAssignee(null)} style={{...s.filterBtn, ...(filterAssignee === null ? {background: '#1a1208', color: '#fff'} : {})}}>Tous</button>
+                {collaborators.map(name => (
+                  <button key={name} onClick={() => setFilterAssignee(filterAssignee === name ? null : name)} style={{...s.filterBtn, ...(filterAssignee === name ? {background: '#c9a84c', color: '#fff', borderColor: '#c9a84c'} : {})}}>👤 {name}</button>
+                ))}
+              </div>
+            </div> {/* FIN DU filterPanel */}
+
+            {/* AFFICHAGE DES FICHES */}
+            {filtered.length === 0 ? (
+              <div style={s.empty}>
+                <p style={{fontSize: 40}}>📝</p>
+                <p style={{color: '#9a8f7a', marginTop: 8}}>Rien ici pour le moment.</p>
+              </div>
+            ) : (
+              <div style={s.noteGrid}>
+                {filtered.map(n => (
+                  <NoteCard key={n.id} note={n} categories={categories} onEdit={setModal} onDelete={deleteNote} />
+                ))}
+              </div>
+            )}
+          </>
+        )}
+
+        {tab === 'calendar' && <CalendarView notes={notes} />}
+        {tab === 'settings' && (
+          <SettingsView 
+            session={session} 
+            categories={categories} 
+            onCategoriesChange={saveCategories}
+            collaborators={collaborators} 
+            onCollaboratorsChange={saveCollaborators} 
+          />
+        )}
+      </main>
+
+      {modal && (
+        <NoteModal 
+          note={modal === 'new' ? null : modal} 
+          categories={categories} 
+          collaborators={collaborators} 
+          onSave={saveNote} 
+          onClose={() => setModal(null)}
+          onNewCategory={saveCategories}
+          currentTab={tab}
         />
-        <button style={{...s.btn, whiteSpace: 'nowrap'}} onClick={() => setModal('new')}>
-          ＋ {tab === 'simple_notes' ? 'Note' : 'Tâche'}
-        </button>
-      </div>
-
-      {/* On n'affiche la ligne Priorité QUE si on est dans l'onglet Tâches ('notes') */}
-{tab === 'notes' && (
-  <div style={{display: 'flex', gap: 5, marginBottom: 12, flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between'}}>
-    
-    {/* LA PARTIE GAUCHE : LES PRIORITÉS */}
-    <div style={{display: 'flex', gap: 5, alignItems: 'center', flexWrap: 'wrap'}}>
-      <span style={s.filterLabel}>Priorité</span>
-     {[[0, 'Toutes'], [1, '🔴 À Faire maintenant'], [2, '🔵 À Planifier'], [3, '🟡 À Déléguer'], [4, '🟢 À méditer']].map(([k, label]) => (
-        <button 
-          key={k} 
-          style={{...s.filterBtn, ...(filterQ === k ? {background: k === 0 ? '#1a1208' : Q[k]?.color, color: '#fff'} : {})}} 
-          onClick={() => setFilterQ(k)}
-        >
-          {label}
-        </button>
-      ))}
-    </div>
-
-    {/* LE NOUVEAU BOUTON : À DROITE */}
-    <button 
-      onClick={() => setShowDone(!showDone)}
-      style={{...s.btnGhost, padding: '4px 12px', fontSize: 11, borderColor: showDone ? '#c9a84c' : '#e5e0d5', color: showDone ? '#c9a84c' : '#9a8f7a', display: 'flex', alignItems: 'center', gap: 5}}
-    >
-      {showDone ? '📂 Voir les tâches actives' : '✅ Voir terminées'}
-    </button>
-  </div>
-)}
-
-      <div style={{display: 'flex', gap: 5, marginBottom: 20, flexWrap: 'wrap', alignItems: 'center'}}>
-        <span style={s.filterLabel}>Catégories</span>
-        <button 
-          onClick={() => setFilterCat(null)} 
-          style={{...s.filterBtn, ...(filterCat === null ? {background: '#1a1208', color: '#fff'} : {})}}
-        >
-          Toutes
-        </button>
-       {categories.map(c => {
-  const count = getCatCount(c.id); // On récupère le nombre ici
-  
-  return (
-    <button 
-      key={c.id} 
-      onClick={() => setFilterCat(filterCat === c.id ? null : c.id)} 
-      style={{
-        background: filterCat === c.id ? c.color : c.color + '15', 
-        color: filterCat === c.id ? '#fff' : c.color, 
-        border: `1px solid ${c.color}55`, 
-        borderRadius: 20, padding: '3px 11px', fontSize: 12, cursor: 'pointer', fontWeight: 500
-      }}
-    >
-      {/* On affiche le nom + le compteur s'il y a des notes */}
-      {c.name} {count > 0 && `(${count})`}
-    </button>
-  );
-})}
-      </div>
-{/* Ligne Équipe (Qui ?) CORRIGÉE */}
-<div style={{display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center'}}>
-  <span style={s.filterLabel}>Équipe</span>
-  
-  <div style={{display: 'flex', gap: 5, flexWrap: 'wrap', alignItems: 'center'}}>
-    <button 
-      onClick={() => setFilterAssignee(null)} 
-      style={{...s.filterBtn, ...(filterAssignee === null ? {background: '#1a1208', color: '#fff'} : {})}}
-    >
-      Tous
-    </button>
-    
-    {collaborators.map(name => (
-      <button 
-        key={name} 
-        onClick={() => setFilterAssignee(filterAssignee === name ? null : name)} 
-        style={{
-          ...s.filterBtn, 
-          // Largeur auto pour éviter l'étirement
-          width: 'auto', 
-          ...(filterAssignee === name ? {background: '#c9a84c', color: '#fff', borderColor: '#c9a84c'} : {})
-        }}
-      >
-        👤 {name}
-      </button>
-    ))}
-  </div>
-</div>
-      <div style={{ borderTop: '2px solid #e5e0d5', margin: '10px 0 25px', opacity: 0.9 }} />
-      {filtered.length === 0 ? (
-        <div style={s.empty}>
-          <p style={{fontSize: 40}}>📝</p>
-          <p style={{color: '#9a8f7a', marginTop: 8}}>Rien ici pour le moment.</p>
-        </div>
-      ) : (
-        <div style={s.noteGrid}>
-          {filtered.map(n => (
-            <NoteCard key={n.id} note={n} categories={categories} onEdit={setModal} onDelete={deleteNote} />
-          ))}
-        </div>
       )}
-    </>
-  )}
-
-  {tab === 'calendar' && <CalendarView notes={notes} />}
-  {tab === 'settings' && (
-  <SettingsView 
-    session={session} 
-    categories={categories} 
-    onCategoriesChange={saveCategories}
-    collaborators={collaborators} 
-    onCollaboratorsChange={saveCollaborators} 
-  />
-)}
-</main>
-
-     // Trouve cette ligne en bas du fichier et remplace-la par :
-{modal && (
-  <NoteModal 
-    note={modal === 'new' ? null : modal} 
-    categories={categories} 
-    collaborators={collaborators} 
-    onSave={saveNote} 
-    onClose={() => setModal(null)}
-    onNewCategory={saveCategories}
-    currentTab={tab}
-  />
-)}
     </div>
   )
 }
