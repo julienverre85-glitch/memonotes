@@ -984,7 +984,7 @@ const s = {
   bannerEmoji: {fontSize:13},
   bannerLabel: {fontSize:11,fontWeight:600,color:'rgba(255,255,255,0.95)',flex:1},
   bannerDesc:  {fontSize:9,color:'rgba(255,255,255,0.75)',background:'rgba(0,0,0,0.2)',padding:'2px 6px',borderRadius:10},
-  cardBody:    {padding:'13px 15px 11px' flex: 1},
+  cardBody:    {padding:'13px 15px 11px', flex: 1},
   cardTitle:   {fontFamily:'var(--font-display)',fontSize:15,fontWeight:600,color:'#1a1208',marginBottom:5},
   cardContent: {fontSize:12,color:'#7a6f5e',lineHeight:1.5,marginBottom:8,display:'-webkit-box',WebkitLineClamp:3,WebkitBoxOrient:'vertical',overflow:'hidden'},
   cardFooter:  {display:'flex',alignItems:'center',justifyContent:'space-between',gap:8},
