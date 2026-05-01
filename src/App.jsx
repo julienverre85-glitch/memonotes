@@ -894,8 +894,25 @@ const getCatCount = (catId) => {
         </button>
        {categories.map(c => {
   const count = getCatCount(c.id); // On récupère le nombre ici
-
-  <div style={{display: 'flex', gap: 5, marginBottom: 20, flexWrap: 'wrap', alignItems: 'center'}}>
+  
+  return (
+    <button 
+      key={c.id} 
+      onClick={() => setFilterCat(filterCat === c.id ? null : c.id)} 
+      style={{
+        background: filterCat === c.id ? c.color : c.color + '15', 
+        color: filterCat === c.id ? '#fff' : c.color, 
+        border: `1px solid ${c.color}55`, 
+        borderRadius: 20, padding: '3px 11px', fontSize: 12, cursor: 'pointer', fontWeight: 500
+      }}
+    >
+      {/* On affiche le nom + le compteur s'il y a des notes */}
+      {c.name} {count > 0 && `(${count})`}
+    </button>
+  );
+})}
+      </div>
+ <div style={{display: 'flex', gap: 5, marginBottom: 20, flexWrap: 'wrap', alignItems: 'center'}}>
   <span style={s.filterLabel}>Par Personne</span>
   <button 
     onClick={() => setFilterAssignee(null)} 
@@ -916,25 +933,6 @@ const getCatCount = (catId) => {
     </button>
   ))}
 </div>
-  
-  return (
-    <button 
-      key={c.id} 
-      onClick={() => setFilterCat(filterCat === c.id ? null : c.id)} 
-      style={{
-        background: filterCat === c.id ? c.color : c.color + '15', 
-        color: filterCat === c.id ? '#fff' : c.color, 
-        border: `1px solid ${c.color}55`, 
-        borderRadius: 20, padding: '3px 11px', fontSize: 12, cursor: 'pointer', fontWeight: 500
-      }}
-    >
-      {/* On affiche le nom + le compteur s'il y a des notes */}
-      {c.name} {count > 0 && `(${count})`}
-    </button>
-  );
-})}
-      </div>
-
       {filtered.length === 0 ? (
         <div style={s.empty}>
           <p style={{fontSize: 40}}>📝</p>
