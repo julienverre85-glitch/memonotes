@@ -699,13 +699,14 @@ export default function App() {
     setNotes(data||[])
   }, [session])
 
-  const fetchSettings = useCallback(async () => {
+ const fetchSettings = useCallback(async () => {
   if (!session) return
   const { data } = await supabase.from('user_settings').select('*').eq('user_id', session.user.id).single()
   
   if (data?.categories) setCategories([...data.categories].sort((a, b) => a.name.localeCompare(b.name)))
-  // AJOUT :
-  if (data?.collaborators) setCollaborators([...data.collaborators].sort()) [cite: 86, 87]
+  
+  // CORRECTION : On enlève le texte [cite: 86, 87] qui était ici
+  if (data?.collaborators) setCollaborators([...data.collaborators].sort()) 
 }, [session])
 
   useEffect(() => { fetchNotes(); fetchSettings() }, [fetchNotes, fetchSettings])
