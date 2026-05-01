@@ -680,32 +680,76 @@ export default function App() {
       </header>
 
       <main style={s.main}>
-        {tab==='notes' && <>
-          <div style={s.toolbar}>
-            <input style={{...s.input,flex:1,height:38}} placeholder="Rechercher…" value={search} onChange={e=>setSearch(e.target.value)} />
-            <button style={{...s.btn,whiteSpace:'nowrap'}} onClick={() => setModal('new')}>＋ Note</button>
-          </div>
-          <div style={{display:'flex',gap:5,marginBottom:7,flexWrap:'wrap',alignItems:'center'}}>
-            <span style={s.filterLabel}>Priorité</span>
-            {[[0,'Toutes'],[1,'🔴 À Faire maintenant'],[2,'🔵 À Planifier'],[3,'🟡 À Déléguer'],[4,'🟢 À méditer']].map(([k,label]) => (
-              <button key={k} style={{...s.filterBtn,...(filterQ===k?{background:k===0?'#1a1208':Q[k]?.color,color:'#fff'}:{})}} onClick={() => setFilterQ(k)}>{label}</button>
-            ))}
-          </div>
-          <div style={{display:'flex',gap:5,marginBottom:20,flexWrap:'wrap',alignItems:'center'}}>
-            <span style={s.filterLabel}>Catégorie</span>
-            <button onClick={() => setFilterCat(null)} style={{...s.filterBtn,...(filterCat===null?{background:'#1a1208',color:'#fff'}:{})}}>Toutes</button>
-            {categories.map(c => (
-              <button key={c.id} onClick={() => setFilterCat(filterCat===c.id?null:c.id)} style={{background:filterCat===c.id?c.color:c.color+'15',color:filterCat===c.id?'#fff':c.color,border:`1px solid ${c.color}55`,borderRadius:20,padding:'3px 11px',fontSize:12,cursor:'pointer',fontFamily:'inherit',fontWeight:500}}>{c.name}</button>
-            ))}
-          </div>
-          {filtered.length===0
-            ? <div style={s.empty}><p style={{fontSize:40}}>📋</p><p style={{color:'#9a8f7a',marginTop:8}}>{notes.length===0?'Aucune note. Crée-en une !':'Aucun résultat.'}</p></div>
-            : <div style={s.noteGrid}>{filtered.map(n=><NoteCard key={n.id} note={n} categories={categories} onEdit={setModal} onDelete={deleteNote}/>)}</div>
-          }
-        </>}
-        {tab==='calendar' && <CalendarView notes={notes} />}
-        {tab==='settings' && <SettingsView session={session} categories={categories} onCategoriesChange={setCategories} />}
-      </main>
+  {/* ON DIT AU CODE : Affiche ce bloc pour les Tâches OU pour les Notes */}
+  {(tab === 'notes' || tab === 'simple_notes') && (
+    <>
+      <div style={s.toolbar}>
+        <input 
+          style={{...s.input, flex: 1, height: 38}} 
+          placeholder="Rechercher…" 
+          value={search} 
+          onChange={e => setSearch(e.target.value)} 
+        />
+        <button style={{...s.btn, whiteSpace: 'nowrap'}} onClick={() => setModal('new')}>
+          ＋ {tab === 'simple_notes' ? 'Note' : 'Tâche'}
+        </button>
+      </div>
+
+      <div style={{display: 'flex', gap: 5, marginBottom: 7, flexWrap: 'wrap', alignItems: 'center'}}>
+        <span style={s.filterLabel}>Priorité</span>
+        {[[0, 'Toutes'], [1, '🔴'], [2, '🔵'], [3, '🟡'], [4, '⚫']].map(([k, label]) => (
+          <button 
+            key={k} 
+            style={{...s.filterBtn, ...(filterQ === k ? {background: k === 0 ? '#1a1208' : Q[k]?.color, color: '#fff'} : {})}} 
+            onClick={() => setFilterQ(k)}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
+
+      <div style={{display: 'flex', gap: 5, marginBottom: 20, flexWrap: 'wrap', alignItems: 'center'}}>
+        <span style={s.filterLabel}>Catégorie</span>
+        <button 
+          onClick={() => setFilterCat(null)} 
+          style={{...s.filterBtn, ...(filterCat === null ? {background: '#1a1208', color: '#fff'} : {})}}
+        >
+          Toutes
+        </button>
+        {categories.map(c => (
+          <button 
+            key={c.id} 
+            onClick={() => setFilterCat(filterCat === c.id ? null : c.id)} 
+            style={{
+              background: filterCat === c.id ? c.color : c.color + '15', 
+              color: filterCat === c.id ? '#fff' : c.color, 
+              border: `1px solid ${c.color}55`, 
+              borderRadius: 20, padding: '3px 11px', fontSize: 12, cursor: 'pointer', fontFamily: 'inherit', fontWeight: 500
+            }}
+          >
+            {c.name}
+          </button>
+        ))}
+      </div>
+
+      {filtered.length === 0 ? (
+        <div style={s.empty}>
+          <p style={{fontSize: 40}}>📝</p>
+          <p style={{color: '#9a8f7a', marginTop: 8}}>Rien ici pour le moment.</p>
+        </div>
+      ) : (
+        <div style={s.noteGrid}>
+          {filtered.map(n => (
+            <NoteCard key={n.id} note={n} categories={categories} onEdit={setModal} onDelete={deleteNote} />
+          ))}
+        </div>
+      )}
+    </>
+  )}
+
+  {tab === 'calendar' && <CalendarView notes={notes} />}
+  {tab === 'settings' && <SettingsView session={session} categories={categories} onCategoriesChange={saveCategories} />}
+</main>
 
      // Trouve cette ligne en bas du fichier et remplace-la par :
 {modal && (
