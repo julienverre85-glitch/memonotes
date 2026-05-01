@@ -695,18 +695,21 @@ export default function App() {
         </button>
       </div>
 
-      <div style={{display: 'flex', gap: 5, marginBottom: 7, flexWrap: 'wrap', alignItems: 'center'}}>
-        <span style={s.filterLabel}>Priorité</span>
-        {[[0, 'Toutes'], [1, '🔴'], [2, '🔵'], [3, '🟡'], [4, '⚫']].map(([k, label]) => (
-          <button 
-            key={k} 
-            style={{...s.filterBtn, ...(filterQ === k ? {background: k === 0 ? '#1a1208' : Q[k]?.color, color: '#fff'} : {})}} 
-            onClick={() => setFilterQ(k)}
-          >
-            {label}
-          </button>
-        ))}
-      </div>
+      {/* On n'affiche la ligne Priorité QUE si on est dans l'onglet Tâches ('notes') */}
+{tab === 'notes' && (
+  <div style={{display: 'flex', gap: 5, marginBottom: 7, flexWrap: 'wrap', alignItems: 'center'}}>
+    <span style={s.filterLabel}>Priorité</span>
+    {[[0, 'Toutes'], [1, '🔴 À Faire maintenant'], [2, '🔵 À Planifier'], [3, '🟡 À Déléguer'], [4, '🟢 À méditer']].map(([k, label]) => (
+      <button 
+        key={k} 
+        style={{...s.filterBtn, ...(filterQ === k ? {background: k === 0 ? '#1a1208' : Q[k]?.color, color: '#fff'} : {})}} 
+        onClick={() => setFilterQ(k)}
+      >
+        {label}
+      </button>
+    ))}
+  </div>
+)}
 
       <div style={{display: 'flex', gap: 5, marginBottom: 20, flexWrap: 'wrap', alignItems: 'center'}}>
         <span style={s.filterLabel}>Catégorie</span>
