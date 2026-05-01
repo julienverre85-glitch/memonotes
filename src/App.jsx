@@ -183,38 +183,65 @@ function AuthScreen({ onAuth }) {
 }
 
 /* ──────────────────── CAT DROPDOWN ──────────────────── */
-function CatDropdown({ categories, selected, onChange }) {
+function CatDropdown({ categories, selected, onChange, onNewCategory }) {
   const [open, setOpen] = useState(false)
+  const [query, setQuery] = useState('')
   const ref = useRef()
+
   useEffect(() => {
     const h = e => { if (ref.current && !ref.current.contains(e.target)) setOpen(false) }
     document.addEventListener('mousedown', h)
     return () => document.removeEventListener('mousedown', h)
   }, [])
+
   const toggle = id => onChange(selected.includes(id) ? selected.filter(x => x!==id) : [...selected, id])
+
+  const addNew = () => {
+    if (!query.trim()) return
+    const newCat = {
+      id: 'c' + Date.now(),
+      name: query.trim(),
+      color: CAT_PALETTE[Math.floor(Math.random() * CAT_PALETTE.length)]
+    }
+    onNewCategory([...categories, newCat])
+    toggle(newCat.id)
+    setQuery('')
+  }
+
   return (
     <div ref={ref} style={{position:'relative'}}>
       <div onClick={() => setOpen(o => !o)} style={{...s.input, cursor:'pointer', display:'flex', alignItems:'center', gap:6, flexWrap:'wrap', minHeight:40}}>
-        {selected.length===0
-          ? <span style={{color:'#9a8f7a',fontSize:13}}>Choisir des catégories…</span>
-          : selected.map(id => {
-              const c = categories.find(x => x.id===id)
-              return c ? <span key={id} style={{background:c.color+'22',color:c.color,border:`1px solid ${c.color}55`,borderRadius:20,padding:'2px 8px',fontSize:11,fontWeight:600}}>{c.name}</span> : null
-            })}
-        <span style={{marginLeft:'auto',color:'#9a8f7a',fontSize:10,flexShrink:0}}>{open ? '▲' : '▼'}</span>
+        {selected.length === 0 ? (
+          <span style={{color:'#9a8f7a',fontSize:13}}>Choisir ou créer…</span>
+        ) : (
+          selected.map(id => {
+            const c = categories.find(x => x.id === id)
+            return c ? <span key={id} style={{background:c.color+'22',color:c.color,border:`1px solid ${c.color}55`,borderRadius:20,padding:'2px 8px',fontSize:11,fontWeight:600}}>{c.name}</span> : null
+          })
+        )}
       </div>
+
       {open && (
-        <div style={{position:'absolute',top:'calc(100% + 4px)',left:0,right:0,background:'#fff',border:'1px solid #e5e0d5',borderRadius:8,boxShadow:'0 8px 24px rgba(0,0,0,0.12)',zIndex:200,overflow:'hidden'}}>
-          {categories.length===0
-            ? <p style={{padding:'12px',color:'#9a8f7a',fontSize:13}}>Aucune catégorie. Crée-en dans Paramètres.</p>
-            : categories.map(c => (
+        <div style={{position:'absolute',top:'calc(100% + 4px)',left:0,right:0,background:'#fff',border:'1px solid #e5e0d5',borderRadius:8,boxShadow:'0 8px 24px rgba(0,0,0,0.12)',zIndex:200}}>
+          <div style={{maxHeight: 200, overflowY: 'auto'}}>
+            {categories.map(c => (
               <div key={c.id} onClick={() => toggle(c.id)} style={{display:'flex',alignItems:'center',gap:10,padding:'9px 14px',cursor:'pointer',background:selected.includes(c.id) ? c.color+'12' : 'transparent'}}>
-                <span style={{width:10,height:10,borderRadius:'50%',background:c.color,flexShrink:0}} />
-                <span style={{fontSize:13,color:'#1a1208',flex:1}}>{c.name}</span>
-                {selected.includes(c.id) && <span style={{color:c.color,fontSize:14,fontWeight:700}}>✓</span>}
+                <span style={{width:10,height:10,borderRadius:'50%',background:c.color}} />
+                <span style={{fontSize:13}}>{c.name}</span>
+                {selected.includes(c.id) && <span style={{color:c.color,marginLeft:'auto'}}>✓</span>}
               </div>
-            ))
-          }
+            ))}
+          </div>
+          <div style={{padding:8, borderTop:'1px solid #f0ece3', display:'flex', gap:5}}>
+            <input 
+              style={{...s.input, padding:'4px 8px', height:30, fontSize:12}} 
+              placeholder="Nouveau tag..." 
+              value={query} 
+              onChange={e => setQuery(e.target.value)}
+              onKeyDown={e => e.key === 'Enter' && addNew()}
+            />
+            <button onClick={addNew} style={{...s.btn, padding:'0 10px', height:30, fontSize:12}}>＋</button>
+          </div>
         </div>
       )}
     </div>
@@ -312,7 +339,7 @@ function NoteModal({ note, categories, onSave, onClose }) {
           </div>
 
           <label style={s.label}>Catégories</label>
-          <CatDropdown categories={categories} selected={cats} onChange={setCats} />
+          <CatDropdown categories={categories} selected={cats} onChange={setCats} onNewCategory={onSaveCategories} />
 
           <label style={s.label}>Date & heure de rappel</label>
           <DateTimePicker value={reminderAt} onChange={setReminderAt} />
@@ -527,6 +554,14 @@ export default function App() {
   }, [session])
 
   useEffect(() => { fetchNotes(); fetchSettings() }, [fetchNotes, fetchSettings])
+
+  const saveCategories = async (newCats) => {
+  setCategories(newCats)
+  await supabase.from('user_settings').upsert({ 
+    user_id: session.user.id, 
+    categories: newCats 
+  })
+}
 
   const saveNote = async (payload) => {
   // On sépare l'ID du reste des données pour ne pas perturber Supabase
