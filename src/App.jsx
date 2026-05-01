@@ -24,7 +24,9 @@ function urlBase64ToUint8Array(base64String) {
 /* ──────────────────── DATE TIME PICKER ──────────────────── */
 function DateTimePicker({ value, onChange }) {
   const today = new Date()
-  const parsed = value ? new Date(value) : null
+  // Sécurité : Si la date est invalide, on utilise la date du jour
+  const parsed = value && !isNaN(new Date(value).getTime()) ? new Date(value) : null
+  
   const [year, setYear]   = useState(parsed ? parsed.getFullYear() : today.getFullYear())
   const [month, setMonth] = useState(parsed ? parsed.getMonth() : today.getMonth())
   const [day, setDay]     = useState(parsed ? parsed.getDate() : null)
@@ -32,12 +34,10 @@ function DateTimePicker({ value, onChange }) {
   const [minute, setMinute] = useState(parsed ? Math.round(parsed.getMinutes()/5)*5 : 0)
   const [showTime, setShowTime] = useState(!!parsed)
 
+  // Recalculer si le mois/année change
   const firstDay    = new Date(year, month, 1).getDay()
   const daysInMonth = new Date(year, month + 1, 0).getDate()
   const offset      = (firstDay + 6) % 7
-
-  const prevMonth = () => { if(month===0){setMonth(11);setYear(y=>y-1)}else setMonth(m=>m-1) }
-  const nextMonth = () => { if(month===11){setMonth(0);setYear(y=>y+1)}else setMonth(m=>m+1) }
 
   const selectDay = (d) => {
     setDay(d); setShowTime(true)
@@ -51,82 +51,52 @@ function DateTimePicker({ value, onChange }) {
     onChange(dt.toISOString())
   }
 
-  const clear = () => { setDay(null); setShowTime(false); onChange('') }
-
-  const isToday = d => d===today.getDate() && month===today.getMonth() && year===today.getFullYear()
-  const isSelected = d => d===day
-
   const cells = []
-  for(let i=0;i<offset;i++) cells.push(null)
-  for(let d=1;d<=daysInMonth;d++) cells.push(d)
+  for(let i=0; i<offset; i++) cells.push(null)
+  for(let d=1; d<=daysInMonth; d++) cells.push(d)
 
   const hours = Array.from({length:24},(_,i)=>i)
   const minutes = [0,5,10,15,20,25,30,35,40,45,50,55]
 
   return (
-    <div style={{background:'#f8f6f1',border:'1px solid #e5e0d5',borderRadius:12,overflow:'hidden'}}>
-      {/* Navigation mois */}
-      <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'10px 14px',background:'#fff',borderBottom:'1px solid #f0ece3'}}>
-        <button onClick={prevMonth} style={{background:'transparent',border:'none',cursor:'pointer',fontSize:18,color:'#9a8f7a',padding:'0 6px'}}>‹</button>
-        <span style={{fontWeight:600,fontSize:14,color:'#1a1208'}}>{MONTHS_FR[month]} {year}</span>
-        <button onClick={nextMonth} style={{background:'transparent',border:'none',cursor:'pointer',fontSize:18,color:'#9a8f7a',padding:'0 6px'}}>›</button>
+    <div style={{background:'#f8f6f1', border:'1px solid #e5e0d5', borderRadius:12, overflow:'visible', minHeight: 200}}>
+      {/* Navigation */}
+      <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'10px 14px',background:'#fff',borderBottom:'1px solid #f0ece3', borderRadius:'12px 12px 0 0'}}>
+        <button onClick={() => {if(month===0){setMonth(11);setYear(y=>y-1)}else setMonth(m=>m-1)}} style={s.iconBtn}>‹</button>
+        <span style={{fontWeight:600,fontSize:14}}>{MONTHS_FR[month]} {year}</span>
+        <button onClick={() => {if(month===11){setMonth(0);setYear(y=>y+1)}else setMonth(m=>m+1)}} style={s.iconBtn}>›</button>
       </div>
 
-      {/* Grille jours */}
       <div style={{padding:'10px 12px'}}>
         <div style={{display:'grid',gridTemplateColumns:'repeat(7,1fr)',gap:2,marginBottom:6}}>
-          {DAYS_FR.map(d=><div key={d} style={{textAlign:'center',fontSize:10,fontWeight:600,color:'#9a8f7a',padding:'2px 0'}}>{d}</div>)}
+          {DAYS_FR.map(d=><div key={d} style={{textAlign:'center',fontSize:10,fontWeight:600,color:'#9a8f7a'}}>{d}</div>)}
           {cells.map((d,i)=>(
             <div key={i} onClick={()=>d&&selectDay(d)} style={{
-              textAlign:'center',fontSize:12,padding:'5px 2px',borderRadius:6,cursor:d?'pointer':'default',
-              background: isSelected(d) ? '#c9a84c' : isToday(d) ? 'rgba(201,168,76,0.15)' : 'transparent',
-              color: isSelected(d) ? '#fff' : isToday(d) ? '#c9a84c' : d ? '#1a1208' : 'transparent',
-              fontWeight: isSelected(d)||isToday(d) ? 700 : 400,
-              border: isToday(d)&&!isSelected(d) ? '1px solid #c9a84c' : '1px solid transparent',
+              textAlign:'center',fontSize:12,padding:'6px 0',borderRadius:6,cursor:d?'pointer':'default',
+              background: day===d ? '#c9a84c' : 'transparent',
+              color: day===d ? '#fff' : d ? '#1a1208' : 'transparent',
+              fontWeight: day===d ? 700 : 400
             }}>{d||''}</div>
           ))}
         </div>
 
-        {/* Sélecteur heure/minute */}
         {showTime && day && (
-          <div style={{borderTop:'1px solid #e5e0d5',paddingTop:10,marginTop:4}}>
-            <p style={{fontSize:11,fontWeight:600,color:'#9a8f7a',textTransform:'uppercase',letterSpacing:'0.5px',marginBottom:8,textAlign:'center'}}>
-              Heure du rappel
-            </p>
-            <div style={{display:'flex',gap:8,justifyContent:'center',alignItems:'center'}}>
-              {/* Heures */}
-              <div style={{background:'#fff',border:'1px solid #e5e0d5',borderRadius:8,overflow:'hidden',height:120,overflowY:'auto',width:52}}>
-                {hours.map(h=>(
-                  <div key={h} onClick={()=>{setHour(h);updateTime(h,minute)}} style={{
-                    padding:'5px 0',textAlign:'center',fontSize:13,cursor:'pointer',
-                    background:hour===h?'#c9a84c':'transparent',
-                    color:hour===h?'#fff':'#1a1208',fontWeight:hour===h?700:400
-                  }}>{String(h).padStart(2,'0')}</div>
+          <div style={{borderTop:'1px solid #e5e0d5', paddingTop:10, marginTop:10}}>
+            <div style={{display:'flex', gap:10, justifyContent:'center', height:100}}>
+              {/* Roulette Heures */}
+              <div style={{width:50, overflowY:'auto', border:'1px solid #e5e0d5', borderRadius:6, background:'#fff'}}>
+                {hours.map(h => (
+                  <div key={h} onClick={()=>{setHour(h); updateTime(h, minute)}} style={{padding:4, textAlign:'center', cursor:'pointer', background:hour===h?'#c9a84c':'transparent', color:hour===h?'#fff':'#1a1208'}}>{String(h).padStart(2,'0')}</div>
                 ))}
               </div>
-              <span style={{fontSize:18,fontWeight:700,color:'#9a8f7a'}}>:</span>
-              {/* Minutes */}
-              <div style={{background:'#fff',border:'1px solid #e5e0d5',borderRadius:8,overflow:'hidden',height:120,overflowY:'auto',width:52}}>
-                {minutes.map(m=>(
-                  <div key={m} onClick={()=>{setMinute(m);updateTime(hour,m)}} style={{
-                    padding:'5px 0',textAlign:'center',fontSize:13,cursor:'pointer',
-                    background:minute===m?'#c9a84c':'transparent',
-                    color:minute===m?'#fff':'#1a1208',fontWeight:minute===m?700:400
-                  }}>{String(m).padStart(2,'0')}</div>
+              {/* Roulette Minutes */}
+              <div style={{width:50, overflowY:'auto', border:'1px solid #e5e0d5', borderRadius:6, background:'#fff'}}>
+                {minutes.map(m => (
+                  <div key={m} onClick={()=>{setMinute(m); updateTime(hour, m)}} style={{padding:4, textAlign:'center', cursor:'pointer', background:minute===m?'#c9a84c':'transparent', color:minute===m?'#fff':'#1a1208'}}>{String(m).padStart(2,'0')}</div>
                 ))}
               </div>
             </div>
-            <p style={{textAlign:'center',marginTop:8,fontSize:13,color:'#c9a84c',fontWeight:600}}>
-              {String(day).padStart(2,'0')}/{String(month+1).padStart(2,'0')}/{year} à {String(hour).padStart(2,'0')}:{String(minute).padStart(2,'0')}
-            </p>
           </div>
-        )}
-
-        {/* Bouton effacer */}
-        {day && (
-          <button onClick={clear} style={{width:'100%',marginTop:8,background:'transparent',border:'1px solid #e5e0d5',color:'#9a8f7a',borderRadius:7,padding:'5px',fontSize:12,cursor:'pointer',fontFamily:'inherit'}}>
-            Supprimer le rappel
-          </button>
         )}
       </div>
     </div>
