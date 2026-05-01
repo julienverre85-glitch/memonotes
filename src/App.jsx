@@ -282,7 +282,7 @@ function NoteModal({ note, categories, onSave, onClose }) {
       title: title.trim(), content: content.trim(),
       importance, cats,
       reminder_at: reminderAt || null,
-      email_notify: emailNotify, push_notify: pushNotify, reminder_sent: false,
+      email_notify: emailNotify, push_notify: pushNotify,
     })
     setSaving(false)
   }
