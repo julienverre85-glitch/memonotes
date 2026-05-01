@@ -529,19 +529,30 @@ export default function App() {
   useEffect(() => { fetchNotes(); fetchSettings() }, [fetchNotes, fetchSettings])
 
   const saveNote = async (payload) => {
-  // On s'assure que 'cats' est bien envoyé
-  const noteData = {
-    ...payload,
-    cats: payload.cats || [] // Force l'usage de 'cats'
-  }
-
-  if (payload.id) {
-    await supabase.from('notes').update({...noteData, updated_at: new Date().toISOString()}).eq('id', payload.id)
+  // On sépare l'ID du reste des données pour ne pas perturber Supabase
+  const { id, ...dataToSave } = payload;
+  
+  if (id) {
+    // Modification d'une note existante
+    await supabase
+      .from('notes')
+      .update({
+        ...dataToSave,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', id);
   } else {
-    await supabase.from('notes').insert({...noteData, user_id: session.user.id})
+    // Création d'une nouvelle note
+    await supabase
+      .from('notes')
+      .insert({
+        ...dataToSave,
+        user_id: session.user.id
+      });
   }
+  
   await fetchNotes(); 
-  setModal(null)
+  setModal(null);
 }
 
   const deleteNote = async (id) => {
