@@ -413,11 +413,10 @@ function NoteModal({ note, categories, collaborators, onSave, onClose, onNewCate
           <button style={{...s.iconBtn,color:'#fff',fontSize:20}} onClick={onClose}>×</button>
         </div>
 
-        <div style={s.modalBody}>
+<div style={s.modalBody}>
           <input style={{...s.input,fontSize:15,fontWeight:500}} placeholder="Titre *" value={title} onChange={e => setTitle(e.target.value)} />
           <textarea style={{...s.input,...s.textarea}} placeholder="Contenu (optionnel)" value={content} onChange={e => setContent(e.target.value)} />
 
-          {/* Si on bascule en tâche, les priorités apparaissent comme par magie */}
           {!isSimpleNote && (
             <>
               <label style={s.label}>Importance (Eisenhower)</label>
@@ -433,39 +432,39 @@ function NoteModal({ note, categories, collaborators, onSave, onClose, onNewCate
           )}
 
           {!isSimpleNote && (
-  <div style={{display:'flex', gap:10}}>
-    <div style={{flex:1}}>
-      <label style={s.label}>Statut</label>
-      <select 
-        value={status} 
-        onChange={e => setStatus(e.target.value)}
-        style={{...s.input, padding:'7px 10px'}}
-      >
-        <option value="todo">⏳ À faire</option>
-        <option value="doing">🚀 En cours</option>
-        <option value="done">✅ Terminé</option>
-      </select>
-    </div>
-    <div style={{flex:1}}>
-  <label style={s.label}>Collaborateurs</label>
-  <div style={{...s.input, minHeight: 40, padding: '8px 10px'}}>
-    {collaborators && collaborators.map(name => (
-      <label key={name} style={{display:'flex', alignItems:'center', gap:8, fontSize:13, marginBottom:4, cursor:'pointer', color:'#1a1208'}}>
-        <input 
-          type="checkbox" 
-          checked={assignees.includes(name)}
-          onChange={(e) => {
-            if(e.target.checked) setAssignees([...assignees, name])
-            else setAssignees(assignees.filter(n => n !== name))
-          }}
-        />
-        {name}
-      </label>
-    ))}
-    {(!collaborators || collaborators.length === 0) && <span style={{fontSize:12, color:'#9a8f7a'}}>Aucun collaborateur créé</span>}
-  </div>
-</div>
-)}
+            <div style={{display:'flex', gap:10}}>
+              {/* STATUT */}
+              <div style={{flex:1}}>
+                <label style={s.label}>Statut</label>
+                <select value={status} onChange={e => setStatus(e.target.value)} style={{...s.input, padding:'7px 10px'}}>
+                  <option value="todo">⏳ À faire</option>
+                  <option value="doing">🚀 En cours</option>
+                  <option value="done">✅ Terminé</option>
+                </select>
+              </div>
+
+              {/* MULTI-COLLABORATEURS */}
+              <div style={{flex:1}}>
+                <label style={s.label}>Collaborateurs</label>
+                <div style={{...s.input, minHeight: 40, padding: '8px 10px', background: '#f8f6f1'}}>
+                  {collaborators && collaborators.map(name => (
+                    <label key={name} style={{display:'flex', alignItems:'center', gap:8, fontSize:13, marginBottom:4, cursor:'pointer', color:'#1a1208'}}>
+                      <input 
+                        type="checkbox" 
+                        checked={assignees.includes(name)}
+                        onChange={(e) => {
+                          if(e.target.checked) setAssignees([...assignees, name])
+                          else setAssignees(assignees.filter(n => n !== name))
+                        }}
+                      />
+                      {name}
+                    </label>
+                  ))}
+                  {(!collaborators || collaborators.length === 0) && <span style={{fontSize:11, color:'#9a8f7a'}}>Aucun nom créé</span>}
+                </div>
+              </div>
+            </div>
+          )}
 
           <label style={s.label}>Catégories</label>
           <CatDropdown categories={categories} selected={cats} onChange={setCats} onNewCategory={onNewCategory} />
@@ -474,7 +473,6 @@ function NoteModal({ note, categories, collaborators, onSave, onClose, onNewCate
             <>
               <label style={s.label}>Date & heure de rappel</label>
               <DateTimePicker value={reminderAt} onChange={setReminderAt} />
-              {/* ... reste des notifications ... */}
             </>
           )}
         </div>
