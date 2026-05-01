@@ -583,10 +583,15 @@ export default function App() {
   }, [session])
 
   const fetchSettings = useCallback(async () => {
-    if (!session) return
-    const {data} = await supabase.from('user_settings').select('*').eq('user_id',session.user.id).single()
-    if (data?.categories) setCategories(data.categories)
-  }, [session])
+  if (!session) return
+  const { data } = await supabase.from('user_settings').select('*').eq('user_id', session.user.id).single()
+  
+  if (data?.categories) {
+    // On trie ici aussi pour l'affichage au démarrage
+    const sorted = [...data.categories].sort((a, b) => a.name.localeCompare(b.name))
+    setCategories(sorted)
+  }
+}, [session])
 
   useEffect(() => { fetchNotes(); fetchSettings() }, [fetchNotes, fetchSettings])
 
