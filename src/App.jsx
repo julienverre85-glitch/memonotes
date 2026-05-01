@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { supabase } from './lib/supabase'
 
-const VAPID_PUBLIC_KEY = 'VOTRE_VAPID_PUBLIC_KEY'
+const VAPID_PUBLIC_KEY = 'BAurdkv0qAKxkuzAq448zYqL5BuOjxWjBkXANNBAh7nDGho7UUsFgfu9TUyc4zg_vsZ4ggW3PVvK6Z_ZiTsNmXs'
 
 const Q = {
   1: { label: 'Urgent · Important',       color: '#dc2626', light: 'rgba(220,38,38,0.10)',  emoji: '🔴', desc: 'Faire maintenant' },
