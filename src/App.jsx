@@ -23,131 +23,116 @@ function urlBase64ToUint8Array(base64String) {
 
 /* ──────────────────── DATE TIME PICKER ──────────────────── */
 /* ──────────────────── DATE TIME PICKER (Version Popover Compacte) ──────────────────── */
+/* ──────────────────── DATE TIME PICKER (Indépendant) ──────────────────── */
 function DateTimePicker({ value, onChange }) {
-  const [isOpen, setIsOpen] = useState(false)
+  const [openPart, setOpenPart] = useState(null) // 'date' ou 'time'
+  const pickerRef = useRef(null)
   const today = new Date()
   
-  // Sécurité : Validation de la date pour éviter les erreurs "Invalid Date"
   const parsed = value && !isNaN(new Date(value).getTime()) ? new Date(value) : null
   
-  const [year, setYear]     = useState(parsed ? parsed.getFullYear() : today.getFullYear())
-  const [month, setMonth]   = useState(parsed ? parsed.getMonth() : today.getMonth())
-  const [day, setDay]       = useState(parsed ? parsed.getDate() : null)
-  const [hour, setHour]     = useState(parsed ? parsed.getHours() : 9)
+  const [year, setYear]   = useState(parsed ? parsed.getFullYear() : today.getFullYear())
+  const [month, setMonth] = useState(parsed ? parsed.getMonth() : today.getMonth())
+  const [day, setDay]     = useState(parsed ? parsed.getDate() : today.getDate())
+  const [hour, setHour]   = useState(parsed ? parsed.getHours() : 9)
   const [minute, setMinute] = useState(parsed ? Math.round(parsed.getMinutes()/5)*5 : 0)
 
-  const firstDay    = new Date(year, month, 1).getDay()
-  const daysInMonth = new Date(year, month + 1, 0).getDate()
-  const offset      = (firstDay + 6) % 7
-  const cells = []
-  for(let i=0; i<offset; i++) cells.push(null)
-  for(let d=1; d<=daysInMonth; d++) cells.push(d)
+  // Fermer les menus si on clique ailleurs
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (pickerRef.current && !pickerRef.current.contains(e.target)) setOpenPart(null)
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
 
-  const hours = Array.from({length:24},(_,i)=>i)
-  const minutes = [0,5,10,15,20,25,30,35,40,45,50,55]
-
-  const update = (d, h, m) => {
-    if (!d) return
-    const dt = new Date(year, month, d, h, m)
+  const updateGlobal = (newDay, newHour, newMin) => {
+    const dt = new Date(year, month, newDay, newHour, newMin)
     onChange(dt.toISOString())
   }
 
-  // Affichage formaté style image 2
-  const displayDate = day ? `${String(day).padStart(2,'0')}/${String(month+1).padStart(2,'0')}/${year}` : '--/--/----'
-  const displayTime = day ? `${String(hour).padStart(2,'0')}:${String(minute).padStart(2,'0')}` : '--:--'
+  const cells = []
+  const firstDay = (new Date(year, month, 1).getDay() + 6) % 7
+  for(let i=0; i<firstDay; i++) cells.push(null)
+  for(let d=1; d<=new Date(year, month + 1, 0).getDate(); d++) cells.push(d)
+
+  const displayDate = parsed ? `${String(day).padStart(2,'0')}/${String(month+1).padStart(2,'0')}/${year}` : 'Choisir date...'
+  const displayTime = parsed ? `${String(hour).padStart(2,'0')}:${String(minute).padStart(2,'0')}` : '--:--'
+
+  const popoverStyle = {
+    position:'absolute', top:'100%', left:0, zIndex:1000, background:'#fff', 
+    border:'1px solid #e5e0d5', borderRadius:12, boxShadow:'0 10px 25px rgba(0,0,0,0.1)',
+    marginTop:5, padding:12, animation:'fadeIn 0.2s ease'
+  }
 
   return (
-    <div style={{ position: 'relative', width: '100%' }}>
-      {/* Champs de saisie visuels (style image 2) */}
-      <div style={{ display: 'flex', gap: 12 }}>
-        <div style={{ flex: 1 }} onClick={() => setIsOpen(!isOpen)}>
-          <label style={s.label}>Date</label>
-          <div style={{ ...s.input, cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span>{displayDate}</span>
-            <span style={{ fontSize: 16 }}>📅</span>
-          </div>
+    <div ref={pickerRef} style={{ display: 'flex', gap: 10, position: 'relative' }}>
+      
+      {/* BLOC DATE */}
+      <div style={{ flex: 1, position: 'relative' }}>
+        <label style={s.label}>Date</label>
+        <div onClick={() => setOpenPart(openPart === 'date' ? null : 'date')} 
+             style={{ ...s.input, cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <span style={{color: parsed ? '#1a1208' : '#9a8f7a'}}>{displayDate}</span>
+          <span>📅</span>
         </div>
-        <div style={{ width: 110 }} onClick={() => setIsOpen(!isOpen)}>
-          <label style={s.label}>Heure</label>
-          <div style={{ ...s.input, cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span>{displayTime}</span>
-            <span style={{ fontSize: 16 }}>🕒</span>
+        
+        {openPart === 'date' && (
+          <div style={{ ...popoverStyle, width: 260 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 10, alignItems: 'center' }}>
+              <button onClick={() => { if(month===0){setMonth(11);setYear(y=>y-1)} else setMonth(m=>m-1) }} style={s.iconBtn}>‹</button>
+              <span style={{ fontWeight: 700, fontSize: 13 }}>{MONTHS_FR[month]} {year}</span>
+              <button onClick={() => { if(month===11){setMonth(0);setYear(y=>y+1)} else setMonth(m=>m+1) }} style={s.iconBtn}>›</button>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 2 }}>
+              {DAYS_FR.map(d => <div key={d} style={{ textAlign: 'center', fontSize: 10, fontWeight: 700, color: '#9a8f7a' }}>{d}</div>)}
+              {cells.map((d, i) => (
+                <div key={i} onClick={() => { if(d){ setDay(d); updateGlobal(d, hour, minute); setOpenPart(null); } }} 
+                  style={{
+                    textAlign: 'center', fontSize: 12, padding: '6px 0', borderRadius: 6, cursor: d ? 'pointer' : 'default',
+                    background: day === d && parsed ? '#c9a84c' : 'transparent',
+                    color: day === d && parsed ? '#fff' : d ? '#1a1208' : 'transparent',
+                  }}>{d || ''}</div>
+              ))}
+            </div>
           </div>
-        </div>
+        )}
       </div>
 
-      {/* Le Sélecteur (Calendrier + Roulettes) en mode Popover */}
-      {isOpen && (
-        <div style={{
-          position: 'absolute',
-          top: '100%',
-          left: 0,
-          right: 0,
-          zIndex: 300, // Supérieur aux autres éléments du modal[cite: 1]
-          background: '#fff',
-          border: '1px solid #e5e0d5',
-          borderRadius: 12,
-          boxShadow: '0 10px 30px rgba(0,0,0,0.15)',
-          marginTop: 8,
-          padding: 12,
-          animation: 'fadeIn 0.2s ease'
-        }}>
-          {/* Navigation Mois */}
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
-            <button onClick={(e) => { e.stopPropagation(); if(month===0){setMonth(11);setYear(y=>y-1)}else setMonth(m=>m-1) }} style={s.iconBtn}>‹</button>
-            <span style={{ fontWeight: 700, fontSize: 13, color: '#1a1208' }}>{MONTHS_FR[month]} {year}</span>
-            <button onClick={(e) => { e.stopPropagation(); if(month===11){setMonth(0);setYear(y=>y+1)}else setMonth(m=>m+1) }} style={s.iconBtn}>›</button>
-          </div>
-
-          {/* Grille Jours */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7,1fr)', gap: 2, marginBottom: 12 }}>
-            {DAYS_FR.map(d => <div key={d} style={{ textAlign: 'center', fontSize: 10, fontWeight: 700, color: '#9a8f7a' }}>{d}</div>)}
-            {cells.map((d, i) => (
-              <div key={i} onClick={(e) => { e.stopPropagation(); if(d){ setDay(d); update(d, hour, minute); } }} style={{
-                textAlign: 'center', fontSize: 12, padding: '6px 0', borderRadius: 6, cursor: d ? 'pointer' : 'default',
-                background: day === d ? '#c9a84c' : 'transparent',
-                color: day === d ? '#fff' : d ? '#1a1208' : 'transparent',
-                fontWeight: day === d ? 700 : 400
-              }}>{d || ''}</div>
-            ))}
-          </div>
-
-          {/* Roulettes Heures/Minutes */}
-          {day && (
-            <div style={{ borderTop: '1px solid #f0ece3', paddingTop: 10, display: 'flex', gap: 10, justifyContent: 'center' }}>
-              <div style={{ textAlign: 'center' }}>
-                <div style={{ fontSize: 9, fontWeight: 700, color: '#9a8f7a', marginBottom: 4 }}>HEURE</div>
-                <div style={{ height: 90, width: 45, overflowY: 'auto', border: '1px solid #e5e0d5', borderRadius: 6, background: '#f8f6f1' }}>
-                  {hours.map(h => (
-                    <div key={h} onClick={(e) => { e.stopPropagation(); setHour(h); update(day, h, minute); }} style={{
-                      padding: '4px 0', textAlign: 'center', cursor: 'pointer', fontSize: 12,
-                      background: hour === h ? '#c9a84c' : 'transparent', color: hour === h ? '#fff' : '#1a1208'
-                    }}>{String(h).padStart(2, '0')}</div>
-                  ))}
-                </div>
-              </div>
-              <div style={{ textAlign: 'center' }}>
-                <div style={{ fontSize: 9, fontWeight: 700, color: '#9a8f7a', marginBottom: 4 }}>MIN</div>
-                <div style={{ height: 90, width: 45, overflowY: 'auto', border: '1px solid #e5e0d5', borderRadius: 6, background: '#f8f6f1' }}>
-                  {minutes.map(m => (
-                    <div key={m} onClick={(e) => { e.stopPropagation(); setMinute(m); update(day, hour, m); }} style={{
-                      padding: '4px 0', textAlign: 'center', cursor: 'pointer', fontSize: 12,
-                      background: minute === m ? '#c9a84c' : 'transparent', color: minute === m ? '#fff' : '#1a1208'
-                    }}>{String(m).padStart(2, '0')}</div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          )}
-
-          <button 
-            onClick={(e) => { e.stopPropagation(); setIsOpen(false); }} 
-            style={{ ...s.btn, width: '100%', marginTop: 12, padding: '6px', fontSize: 12 }}
-          >
-            Confirmer
-          </button>
+      {/* BLOC HEURE */}
+      <div style={{ width: 120, position: 'relative' }}>
+        <label style={s.label}>Heure</label>
+        <div onClick={() => setOpenPart(openPart === 'time' ? null : 'time')} 
+             style={{ ...s.input, cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <span style={{color: parsed ? '#1a1208' : '#9a8f7a'}}>{displayTime}</span>
+          <span>🕒</span>
         </div>
-      )}
+
+        {openPart === 'time' && (
+          <div style={{ ...popoverStyle, width: 110, display: 'flex', gap: 5 }}>
+            {/* Heures */}
+            <div style={{ height: 150, overflowY: 'auto', flex: 1, borderRight: '1px solid #f0ece3' }}>
+              {Array.from({length:24},(_,i)=>i).map(h => (
+                <div key={h} onClick={() => { setHour(h); updateGlobal(day, h, minute); }} 
+                  style={{ padding: '6px 0', textAlign: 'center', fontSize: 13, cursor: 'pointer', 
+                  background: hour === h ? '#c9a84c' : 'transparent', color: hour === h ? '#fff' : '#1a1208', fontWeight: hour === h ? 700 : 400 }}>
+                  {String(h).padStart(2, '0')}
+                </div>
+              ))}
+            </div>
+            {/* Minutes */}
+            <div style={{ height: 150, overflowY: 'auto', flex: 1 }}>
+              {[0,5,10,15,20,25,30,35,40,45,50,55].map(m => (
+                <div key={m} onClick={() => { setMinute(m); updateGlobal(day, hour, m); }} 
+                  style={{ padding: '6px 0', textAlign: 'center', fontSize: 13, cursor: 'pointer',
+                  background: minute === m ? '#c9a84c' : 'transparent', color: minute === m ? '#fff' : '#1a1208', fontWeight: minute === m ? 700 : 400 }}>
+                  {String(m).padStart(2, '0')}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   )
 }
