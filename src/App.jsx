@@ -210,37 +210,61 @@ function CatDropdown({ categories, selected, onChange, onNewCategory }) {
 
   return (
     <div ref={ref} style={{position:'relative'}}>
-      <div onClick={() => setOpen(o => !o)} style={{...s.input, cursor:'pointer', display:'flex', alignItems:'center', gap:6, flexWrap:'wrap', minHeight:40}}>
+      {/* Barre de sélection */}
+      <div 
+        onClick={() => setOpen(o => !o)} 
+        style={{...s.input, cursor:'pointer', display:'flex', alignItems:'center', gap:6, flexWrap:'wrap', minHeight:42, paddingRight: 35}}
+      >
         {selected.length === 0 ? (
-          <span style={{color:'#9a8f7a',fontSize:13}}>Choisir ou créer…</span>
+          <span style={{color:'#4b4b4b', fontSize:13}}>Choisir ou créer un libellé…</span>
         ) : (
           selected.map(id => {
             const c = categories.find(x => x.id === id)
-            return c ? <span key={id} style={{background:c.color+'22',color:c.color,border:`1px solid ${c.color}55`,borderRadius:20,padding:'2px 8px',fontSize:11,fontWeight:600}}>{c.name}</span> : null
+            return c ? <span key={id} style={{background:c.color+'22', color:c.color, border:`1px solid ${c.color}55`, borderRadius:20, padding:'2px 8px', fontSize:11, fontWeight:700}}>{c.name}</span> : null
           })
         )}
+        {/* LA FLÈCHE À DROITE */}
+        <span style={{position:'absolute', right:12, top:'50%', transform:'translateY(-50%)', color:'#4b4b4b', fontSize:10}}>
+          {open ? '▲' : '▼'}
+        </span>
       </div>
 
+      {/* Menu déroulant */}
       {open && (
-        <div style={{position:'absolute',top:'calc(100% + 4px)',left:0,right:0,background:'#fff',border:'1px solid #e5e0d5',borderRadius:8,boxShadow:'0 8px 24px rgba(0,0,0,0.12)',zIndex:200}}>
-          <div style={{maxHeight: 200, overflowY: 'auto'}}>
-            {categories.map(c => (
-              <div key={c.id} onClick={() => toggle(c.id)} style={{display:'flex',alignItems:'center',gap:10,padding:'9px 14px',cursor:'pointer',background:selected.includes(c.id) ? c.color+'12' : 'transparent'}}>
-                <span style={{width:10,height:10,borderRadius:'50%',background:c.color}} />
-                <span style={{fontSize:13}}>{c.name}</span>
-                {selected.includes(c.id) && <span style={{color:c.color,marginLeft:'auto'}}>✓</span>}
-              </div>
-            ))}
+        <div style={{position:'absolute', top:'calc(100% + 4px)', left:0, right:0, background:'#fff', border:'1px solid #e5e0d5', borderRadius:10, boxShadow:'0 12px 30px rgba(0,0,0,0.15)', zIndex:200}}>
+          <div style={{maxHeight: 220, overflowY: 'auto', padding: '4px 0'}}>
+            {categories.map(c => {
+              const isSelected = selected.includes(c.id);
+              return (
+                <div 
+                  key={c.id} 
+                  onClick={() => toggle(c.id)} 
+                  style={{display:'flex', alignItems:'center', gap:10, padding:'10px 14px', cursor:'pointer', background: isSelected ? c.color+'15' : 'transparent'}}
+                >
+                  <span style={{width:10, height:10, borderRadius:'50%', background:c.color}} />
+                  {/* Texte assombri ici (#1a1208 au lieu de gris) */}
+                  <span style={{fontSize:13, color: '#1a1208', fontWeight: isSelected ? 600 : 400}}>{c.name}</span>
+                  {isSelected && <span style={{color:c.color, marginLeft:'auto', fontWeight:700}}>✓</span>}
+                </div>
+              );
+            })}
           </div>
-          <div style={{padding:8, borderTop:'1px solid #f0ece3', display:'flex', gap:5}}>
+          
+          {/* Champ d'ajout rapide */}
+          <div style={{padding:'10px', borderTop:'1px solid #f0ece3', display:'flex', gap:8, background: '#fcfaf7', borderRadius: '0 0 10px 10px'}}>
             <input 
-              style={{...s.input, padding:'4px 8px', height:30, fontSize:12}} 
+              style={{...s.input, padding:'6px 10px', height:34, fontSize:13, background: '#fff'}} 
               placeholder="Nouveau tag..." 
               value={query} 
               onChange={e => setQuery(e.target.value)}
               onKeyDown={e => e.key === 'Enter' && addNew()}
             />
-            <button onClick={addNew} style={{...s.btn, padding:'0 10px', height:30, fontSize:12}}>＋</button>
+            <button 
+              onClick={addNew} 
+              style={{...s.btn, padding:'0 12px', height:34, fontSize:14, display:'flex', alignItems:'center', justifyContent:'center'}}
+            >
+              ＋
+            </button>
           </div>
         </div>
       )}
