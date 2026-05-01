@@ -361,12 +361,8 @@ function NoteModal({ note, categories, collaborators, onSave, onClose, onNewCate
   const [status, setStatus] = useState(note?.status || 'todo')
   const [assignees, setAssignees] = useState(note?.assignees || [])
 
-  // 1. On utilise localType pour piloter TOUTE la modal
   const [localType, setLocalType] = useState(note?.type || (currentTab === 'simple_notes' ? 'note' : 'task'));
-  
-  // 2. IMPORTANT : isSimpleNote dépend maintenant de localType
   const isSimpleNote = localType === 'note';
-  
   const headerColor = isSimpleNote ? '#c9a84c' : Q[importance].color;
 
   const save = async () => {
@@ -383,9 +379,9 @@ function NoteModal({ note, categories, collaborators, onSave, onClose, onNewCate
       reminder_at: isSimpleNote ? null : (reminderAt || null),
       email_notify: isSimpleNote ? false : emailNotify, 
       push_notify: isSimpleNote ? false : pushNotify,
-      // ON LES REMET ICI, AVANT LA FERMETURE :
       status: isSimpleNote ? 'todo' : status,
-      assignees: isSimpleNote ? [] : assignees
+      // CORRECTION ICI : On enregistre les collaborateurs même pour les notes !
+      assignees: assignees 
     })
     
     setSaving(false)
@@ -400,8 +396,6 @@ function NoteModal({ note, categories, collaborators, onSave, onClose, onNewCate
             <span style={{fontFamily:'var(--font-display)',fontSize:18,fontWeight:600,color:'#fff'}}>
               {isSimpleNote ? 'Note 📝' : 'Tâche 📋'}
             </span>
-            
-            {/* Le bouton qui change localType et fait tout basculer */}
             <button 
               type="button"
               onClick={() => setLocalType(isSimpleNote ? 'task' : 'note')}
@@ -413,12 +407,12 @@ function NoteModal({ note, categories, collaborators, onSave, onClose, onNewCate
           <button style={{...s.iconBtn,color:'#fff',fontSize:20}} onClick={onClose}>×</button>
         </div>
 
-<div style={s.modalBody}>
+        <div style={s.modalBody}>
           <input style={{...s.input,fontSize:15,fontWeight:500}} placeholder="Titre *" value={title} onChange={e => setTitle(e.target.value)} />
           <textarea style={{...s.input,...s.textarea}} placeholder="Contenu (optionnel)" value={content} onChange={e => setContent(e.target.value)} />
 
           {!isSimpleNote && (
-            <>
+            <div style={{marginBottom: 12}}>
               <label style={s.label}>Importance (Eisenhower)</label>
               <div style={s.quadGrid}>
                 {Object.entries(Q).map(([k,v]) => (
@@ -428,41 +422,39 @@ function NoteModal({ note, categories, collaborators, onSave, onClose, onNewCate
                   </button>
                 ))}
               </div>
-            </>
+            </div>
           )}
 
-          {/* On garde le Statut uniquement pour les tâches */}
-{!isSimpleNote && (
-  <div style={{marginBottom: 12}}>
-    <label style={s.label}>Statut</label>
-    <select value={status} onChange={e => setStatus(e.target.value)} style={{...s.input, padding:'7px 10px'}}>
-      <option value="todo">⏳ À faire</option>
-      <option value="doing">🚀 En cours</option>
-      <option value="done">✅ Terminé</option>
-    </select>
-  </div>
-)}
-
-{/* MAIS on sort les Collaborateurs pour qu'ils soient visibles PARTOUT */}
-<div style={{marginBottom: 12}}>
-  <label style={s.label}>Collaborateurs</label>
-  <div style={{...s.input, minHeight: 40, padding: '8px 10px', background: '#f8f6f1'}}>
-    {collaborators && collaborators.map(name => (
-      <label key={name} style={{display:'flex', alignItems:'center', gap:8, fontSize:13, marginBottom:4, cursor:'pointer', color:'#1a1208'}}>
-        <input 
-          type="checkbox" 
-          checked={assignees.includes(name)}
-          onChange={(e) => {
-            if(e.target.checked) setAssignees([...assignees, name])
-            else setAssignees(assignees.filter(n => n !== name))
-          }}
-        />
-        {name}
-      </label>
-    ))}
-  </div>
-</div>
+          {!isSimpleNote && (
+            <div style={{marginBottom: 12}}>
+              <label style={s.label}>Statut</label>
+              <select value={status} onChange={e => setStatus(e.target.value)} style={{...s.input, padding:'7px 10px'}}>
+                <option value="todo">⏳ À faire</option>
+                <option value="doing">🚀 En cours</option>
+                <option value="done">✅ Terminé</option>
+              </select>
+            </div>
           )}
+
+          <div style={{marginBottom: 12}}>
+            <label style={s.label}>Collaborateurs</label>
+            <div style={{...s.input, minHeight: 40, padding: '8px 10px', background: '#f8f6f1'}}>
+              {collaborators && collaborators.map(name => (
+                <label key={name} style={{display:'flex', alignItems:'center', gap:8, fontSize:13, marginBottom:4, cursor:'pointer', color:'#1a1208'}}>
+                  <input 
+                    type="checkbox" 
+                    checked={assignees.includes(name)}
+                    onChange={(e) => {
+                      if(e.target.checked) setAssignees([...assignees, name])
+                      else setAssignees(assignees.filter(n => n !== name))
+                    }}
+                  />
+                  {name}
+                </label>
+              ))}
+              {(!collaborators || collaborators.length === 0) && <span style={{fontSize:12, color:'#9a8f7a'}}>Aucun collaborateur créé</span>}
+            </div>
+          </div>
 
           <label style={s.label}>Catégories</label>
           <CatDropdown categories={categories} selected={cats} onChange={setCats} onNewCategory={onNewCategory} />
@@ -484,8 +476,7 @@ function NoteModal({ note, categories, collaborators, onSave, onClose, onNewCate
       </div>
     </div>
   )
-}
-
+} 
 
 /* ──────────────────── CAT SETTINGS ──────────────────── */
 function CatSettings({ categories, onChange }) {
