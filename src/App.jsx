@@ -275,13 +275,18 @@ function CatDropdown({ categories, selected, onChange, onNewCategory }) {
 /* ──────────────────── NOTE CARD ──────────────────── */
 function NoteCard({ note, categories, onEdit, onDelete }) {
   const isTask = note.type !== 'note';
-  const q = Q[note.importance] || Q[4]; // On ajoute le || Q[4] par sécurité
+  const q = Q[note.importance] || Q[4];
   const noteCats = (note.cats || []).map(id => categories.find(c => c.id === id)).filter(Boolean);
   
-  // Sécurité pour la date
+  // Formatage de la date de création
   const dateStr = note.created_at 
     ? new Date(note.created_at).toLocaleString('fr-FR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })
     : 'Date inconnue';
+
+  // Formatage de la date de rappel (si elle existe)
+  const reminderStr = note.reminder_at 
+    ? new Date(note.reminder_at).toLocaleString('fr-FR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })
+    : null;
   
   const noteColors = ['#fff9c4', '#e1f5fe', '#f3e5f5', '#e8f5e9', '#fff3e0'];
   const pastelBg = isTask ? q.light : noteColors[note.id.charCodeAt(0) % noteColors.length];
@@ -292,16 +297,17 @@ function NoteCard({ note, categories, onEdit, onDelete }) {
         <div style={{...s.cardBanner, background:q.color}}>
           <span style={s.bannerEmoji}>{q.emoji}</span>
           <span style={s.bannerLabel}>
-               {q.label} 
-               {note.status === 'doing' && ' | 🚀 EN COURS'}
+            {q.label} {note.status === 'doing' && ' | 🚀 EN COURS'}
           </span>
         </div>
       )}
-     <div style={{...s.cardBody, background: pastelBg, transition: '0.3s'}}>
+      <div style={{...s.cardBody, background: pastelBg, transition: '0.3s'}}>
         <h3 style={s.cardTitle}>{note.title}</h3>
         
-        {/* On affiche la date de création en petit sous le titre */}
-        <p style={{fontSize: 9, color: '#9a8f7a', marginBottom: 8}}>Créé le {dateStr}</p>
+        {/* DATE DE CRÉATION (Plus lisible) */}
+        <p style={{fontSize: 10, color: '#9a8f7a', marginBottom: 8}}>
+          📅 Créé le {dateStr}
+        </p>
         
         {note.content && <p style={s.cardContent}>{note.content}</p>}
         
@@ -313,13 +319,21 @@ function NoteCard({ note, categories, onEdit, onDelete }) {
           </div>
         )}
 
-{isTask && note.assignee && (
-  <div style={{fontSize: 10, color: '#9a8f7a', marginBottom: 8, display: 'flex', alignItems: 'center', gap: 4}}>
-    👤 <strong>{note.assignee}</strong>
-  </div>
-)}
-       
+        {/* AFFICHAGE DU COLLABORATEUR */}
+        {isTask && note.assignee && (
+          <div style={{fontSize: 10, color: '#1a1208', marginBottom: 8, display: 'flex', alignItems: 'center', gap: 4}}>
+            👤 <strong>{note.assignee}</strong>
+          </div>
+        )}
+
         <div style={s.cardFooter}>
+          {/* AFFICHAGE DU RAPPEL (S'il existe) */}
+          {isTask && note.reminder_at && (
+            <span style={{...s.reminderBadge, color: q.color, fontSize: 10}}>
+              ⏰ Rappel : {reminderStr}
+            </span>
+          )}
+          
           <div style={{...s.cardActions, marginLeft: 'auto'}}>
             <button style={s.iconBtn} onClick={() => onEdit(note)}>✏️</button>
             <button style={s.iconBtn} onClick={() => onDelete(note.id)}>🗑️</button>
@@ -437,9 +451,9 @@ function NoteModal({ note, categories, collaborators, onSave, onClose, onNewCate
   >
     <option value="">Personne</option>
     {/* On affiche les noms de ta liste ici */}
-    {categories.collaborators && categories.collaborators.map(name => (
-      <option key={name} value={name}>{name}</option>
-    ))}
+   {collaborators && collaborators.map(name => (
+  <option key={name} value={name}>{name}</option>
+))}
   </select>
 </div> [cite: 65, 66]
   </div>
@@ -893,8 +907,8 @@ const getCatCount = (catId) => {
     session={session} 
     categories={categories} 
     onCategoriesChange={saveCategories}
-    collaborators={collaborators}           // Ajoute ça
-    onCollaboratorsChange={saveCollaborators} // Et ça
+    collaborators={collaborators} 
+    onCollaboratorsChange={saveCollaborators} 
   />
 )}
 </main>
@@ -904,7 +918,7 @@ const getCatCount = (catId) => {
   <NoteModal 
     note={modal === 'new' ? null : modal} 
     categories={categories} 
-    collaborators={collaborators} // Ajoute cette ligne
+    collaborators={collaborators} 
     onSave={saveNote} 
     onClose={() => setModal(null)}
     onNewCategory={saveCategories}
