@@ -846,6 +846,7 @@ const getCatCount = (catId) => {
   {/* ON DIT AU CODE : Affiche ce bloc pour les Tâches OU pour les Notes */}
   {(tab === 'notes' || tab === 'simple_notes') && (
     <>
+      <div style={s.filterPanel}>
       <div style={s.toolbar}>
         <input 
           style={{...s.input, flex: 1, height: 38}} 
@@ -916,6 +917,7 @@ const getCatCount = (catId) => {
       </div>
  <div style={{display: 'flex', gap: 5, marginBottom: 20, flexWrap: 'wrap', alignItems: 'center'}}>
   <span style={s.filterLabel}>Équipe</span>
+  </div>
   <button 
     onClick={() => setFilterAssignee(null)} 
     style={{...s.filterBtn, ...(filterAssignee === null ? {background: '#1a1208', color: '#fff'} : {})}}
