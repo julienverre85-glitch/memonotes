@@ -4,9 +4,9 @@ import { supabase } from './lib/supabase'
 const VAPID_PUBLIC_KEY = 'BAurdkv0qAKxkuzAq448zYqL5BuOjxWjBkXANNBAh7nDGho7UUsFgfu9TUyc4zg_vsZ4ggW3PVvK6Z_ZiTsNmXs'
 
 const Q = {
-  1: { label: 'Urgent · Important',       color: '#dc2626', light: 'rgba(220,38,38,0.10)',  emoji: '🔴', desc: 'Faire maintenant' },
-  2: { label: 'Important · Pas urgent',   color: '#2563eb', light: 'rgba(37,99,235,0.10)',  emoji: '🔵', desc: 'Planifier'        },
-  3: { label: 'Urgent · Pas important',   color: '#d97706', light: 'rgba(217,119,6,0.10)',  emoji: '🟡', desc: 'Déléguer'         },
+  1: { label: 'Urgent · Important',       color: '#dc2626', light: 'rgba(220,38,38,0.10)',  emoji: '🔴', desc: 'À Faire maintenant' },
+  2: { label: 'Important · Pas urgent',   color: '#2563eb', light: 'rgba(37,99,235,0.10)',  emoji: '🔵', desc: 'À Planifier'        },
+  3: { label: 'Urgent · Pas important',   color: '#d97706', light: 'rgba(217,119,6,0.10)',  emoji: '🟡', desc: 'À Déléguer'         },
   4: { label: 'Ni urgent · Ni important', color: '#6b7280', light: 'rgba(107,114,128,0.10)',emoji: '🟢', desc: 'À méditer'        },
 }
 
@@ -633,7 +633,7 @@ export default function App() {
           </div>
           <div style={{display:'flex',gap:5,marginBottom:7,flexWrap:'wrap',alignItems:'center'}}>
             <span style={s.filterLabel}>Priorité</span>
-            {[[0,'Toutes'],[1,'🔴'],[2,'🔵'],[3,'🟡'],[4,'🟢']].map(([k,label]) => (
+            {[[0,'Toutes'],[1,'🔴 À Faire maintenant'],[2,'🔵 À Planifier'],[3,'🟡 À Déléguer'],[4,'🟢 À méditer']].map(([k,label]) => (
               <button key={k} style={{...s.filterBtn,...(filterQ===k?{background:k===0?'#1a1208':Q[k]?.color,color:'#fff'}:{})}} onClick={() => setFilterQ(k)}>{label}</button>
             ))}
           </div>
