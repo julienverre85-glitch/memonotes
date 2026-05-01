@@ -551,21 +551,10 @@ function SettingsView({ session, categories, onCategoriesChange }) {
     } catch(e) { setPushMsg('Erreur : '+e.message); setPushStatus('error') }
   }
 
-  const saveCategories = async (newCats) => {
-  // On trie par nom avant de sauvegarder et de mettre à jour l'affichage
-  const sorted = [...newCats].sort((a, b) => a.name.localeCompare(b.name))
-  
-  setCategories(sorted)
-  await supabase.from('user_settings').upsert({ 
-    user_id: session.user.id, 
-    categories: sorted 
-  })
-}
-
   return (
     <div style={s.settingsWrap}>
       <h2 style={s.sectionTitle}>Paramètres</h2>
-      <CatSettings categories={categories} onChange={saveCategories} />
+      <CatSettings categories={categories} onChange={onCategoriesChange} />
       <div style={s.settingsCard}>
         <h3 style={s.settingsCardTitle}>🔔 Notifications push</h3>
         <p style={{color:'#7a6f5e',marginBottom:16,fontSize:14,lineHeight:1.5}}>Autorise les notifications pour recevoir des rappels directement sur cet appareil.</p>
@@ -631,31 +620,33 @@ export default function App() {
   useEffect(() => { fetchNotes(); fetchSettings() }, [fetchNotes, fetchSettings])
 
   const saveCategories = async (newCats) => {
-  setCategories(newCats)
+  // On trie par nom avant de sauvegarder
+  const sorted = [...newCats].sort((a, b) => a.name.localeCompare(b.name));
+  
+  setCategories(sorted);
   await supabase.from('user_settings').upsert({ 
     user_id: session.user.id, 
-    categories: newCats 
-  })
-}
+    categories: sorted 
+  });
+};
 
   const saveNote = async (payload) => {
-  const type = tab === 'simple_notes' ? 'note' : 'task';
+  // On récupère tout ce qui vient de la modal (y compris l'ID et le type)
   const { id, type, ...dataToSave } = payload;
-  
-  const finalData = { ...dataToSave, type: id ? undefined : type }; // On garde le type d'origine si c'est un edit
 
   if (id) {
+    // Mise à jour : on enregistre les modifs et le type (au cas où on a basculé)
     await supabase.from('notes')
       .update({ ...dataToSave, type, updated_at: new Date().toISOString() })
       .eq('id', id);
   } else {
-   await supabase.from('notes')
+    // Création : on insère la nouvelle note/tâche
+    await supabase.from('notes')
       .insert({ ...dataToSave, type, user_id: session.user.id });
   }
   await fetchNotes(); 
   setModal(null);
 }
-
   const deleteNote = async (id) => {
     if (!confirm('Supprimer cette note ?')) return
     await supabase.from('notes').delete().eq('id',id)
