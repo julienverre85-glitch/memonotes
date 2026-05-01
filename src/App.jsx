@@ -618,34 +618,63 @@ return (
       <CatSettings categories={categories} onChange={onCategoriesChange} />
       
       {/* BLOC COLLABORATEURS CORRIGÉ */}
-      <div style={s.settingsCard}>
-        <h3 style={s.settingsCardTitle}>👥 Liste des collaborateurs</h3>
-        <div style={{display:'flex', gap:8, marginBottom:12}}>
-          <input 
-            placeholder="Nom du collaborateur..." 
-            style={{...s.input, flex:1}}
-            onKeyDown={e => {
-              if(e.key === 'Enter' && e.target.value.trim()){
-                onCollaboratorsChange([...collaborators, e.target.value.trim()]);
-                e.target.value = '';
-              }
-            }}
-          />
-        </div>
-        <div style={{display:'flex', flexWrap:'wrap', gap:6}}>
-          {collaborators.map(name => (
-            <span key={name} style={{background:'#f0ece3', padding:'4px 10px', borderRadius:20, fontSize:12, display:'flex', alignItems:'center', gap:8}}>
-              {name}
-              <button 
-                onClick={() => onCollaboratorsChange(collaborators.filter(n => n !== name))}
-                style={{border:'none', background:'transparent', cursor:'pointer', fontSize:14}}
-              >
-                ×
-              </button>
-            </span>
-          ))}
-        </div>
-      </div>
+     <div style={s.settingsCard}>
+  <h3 style={s.settingsCardTitle}>👥 Liste des collaborateurs</h3>
+  
+  {/* AJOUT DU BOUTON + ICI */}
+  <div style={{display:'flex', gap:8, marginBottom:12}}>
+    <input 
+      id="new-collab-input" // On ajoute un ID pour pouvoir vider le champ au clic
+      placeholder="Nom du collaborateur..." 
+      style={{...s.input, flex:1}}
+      onKeyDown={e => {
+        if(e.key === 'Enter' && e.target.value.trim()){
+          onCollaboratorsChange([...collaborators, e.target.value.trim()]);
+          e.target.value = '';
+        }
+      }}
+    />
+    <button 
+      style={s.btn} 
+      onClick={() => {
+        const input = document.getElementById('new-collab-input');
+        if(input.value.trim()){
+          onCollaboratorsChange([...collaborators, input.value.trim()]);
+          input.value = '';
+        }
+      }}
+    >
+      ＋
+    </button>
+  </div>
+
+  <div style={{display:'flex', flexWrap:'wrap', gap:6}}>
+    {collaborators && collaborators.map(name => (
+      <span 
+        key={name} 
+        style={{
+          background:'#f0ece3', 
+          color:'#1a1208', // ON FORCE LE TEXTE EN NOIR LISIBLE ICI
+          padding:'4px 12px', 
+          borderRadius:20, 
+          fontSize:12, 
+          fontWeight: 600, // On le met un peu plus gras
+          display:'flex', 
+          alignItems:'center', 
+          gap:8
+        }}
+      >
+        {name}
+        <button 
+          onClick={() => onCollaboratorsChange(collaborators.filter(n => n !== name))}
+          style={{border:'none', background:'transparent', cursor:'pointer', fontSize:16, color: '#9a8f7a'}}
+        >
+          ×
+        </button>
+      </span>
+    ))}
+  </div>
+</div>
       <div style={s.settingsCard}>
         <h3 style={s.settingsCardTitle}>🔔 Notifications push</h3>
         <p style={{color:'#7a6f5e',marginBottom:16,fontSize:14,lineHeight:1.5}}>Autorise les notifications pour recevoir des rappels directement sur cet appareil.</p>
