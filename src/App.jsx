@@ -275,11 +275,15 @@ function CatDropdown({ categories, selected, onChange, onNewCategory }) {
 /* ──────────────────── NOTE CARD ──────────────────── */
 function NoteCard({ note, categories, onEdit, onDelete }) {
   const isTask = note.type !== 'note';
-  const q = Q[note.importance];
+  const q = Q[note.importance] || Q[4]; // On ajoute le || Q[4] par sécurité
+  const noteCats = (note.cats || []).map(id => categories.find(c => c.id === id)).filter(Boolean);
   
-  // Couleurs pastel pour les notes
+  // Sécurité pour la date
+  const dateStr = note.created_at 
+    ? new Date(note.created_at).toLocaleString('fr-FR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })
+    : 'Date inconnue';
+  
   const noteColors = ['#fff9c4', '#e1f5fe', '#f3e5f5', '#e8f5e9', '#fff3e0'];
-  // On utilise l'ID pour que la couleur reste la même pour une note donnée
   const pastelBg = isTask ? q.light : noteColors[note.id.charCodeAt(0) % noteColors.length];
 
   return (
@@ -462,7 +466,11 @@ function CatSettings({ categories, onChange }) {
         </div>
         <div style={{display:'flex',gap:6,flexWrap:'wrap'}}>
           {CAT_PALETTE.map(col => (
-            <button key={col} onClick={() => setNewColor(col)} style={{width:22,height:22,borderRadius:'50%',background:col,border:newColor===col?'3px solid #1a1208':'2px solid transparent',cursor:'pointer',outline:'none'}} />
+            <button 
+              key={col} 
+              onClick={() => setNewColor(col)} 
+              style={{width:22,height:22,borderRadius:'50%',background:col,border:newColor===col?'3px solid #1a1208':'2px solid transparent',cursor:'pointer',outline:'none'}} 
+            />
           ))}
         </div>
       </div>
@@ -632,16 +640,20 @@ export default function App() {
 
   const saveNote = async (payload) => {
   const type = tab === 'simple_notes' ? 'note' : 'task';
-  const { id, ...dataToSave } = payload;
+  const { id, type, ...dataToSave } = payload;
   
   const finalData = { ...dataToSave, type: id ? undefined : type }; // On garde le type d'origine si c'est un edit
 
   if (id) {
-    await supabase.from('notes').update({...finalData, updated_at:new Date().toISOString()}).eq('id',id)
+    await supabase.from('notes')
+      .update({ ...dataToSave, type, updated_at: new Date().toISOString() })
+      .eq('id', id);
   } else {
-    await supabase.from('notes').insert({...finalData, type, user_id:session.user.id})
+   await supabase.from('notes')
+      .insert({ ...dataToSave, type, user_id: session.user.id });
   }
-  await fetchNotes(); setModal(null)
+  await fetchNotes(); 
+  setModal(null);
 }
 
   const deleteNote = async (id) => {
