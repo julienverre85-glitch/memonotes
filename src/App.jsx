@@ -648,7 +648,16 @@ export default function App() {
         {tab==='settings' && <SettingsView session={session} categories={categories} onCategoriesChange={setCategories} />}
       </main>
 
-      {modal && <NoteModal note={modal==='new'?null:modal} categories={categories} onSave={saveNote} onClose={() => setModal(null)} />}
+     // Trouve cette ligne en bas du fichier et remplace-la par :
+{modal && (
+  <NoteModal 
+    note={modal === 'new' ? null : modal} 
+    categories={categories} 
+    onSave={saveNote} 
+    onClose={() => setModal(null)}
+    onNewCategory={saveCategories} // <-- On ajoute cette ligne
+  />
+)}
     </div>
   )
 }
