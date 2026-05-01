@@ -915,27 +915,33 @@ const getCatCount = (catId) => {
   );
 })}
       </div>
- <div style={{display: 'flex', gap: 5, marginBottom: 20, flexWrap: 'wrap', alignItems: 'center'}}>
+{/* Ligne Équipe (Qui ?) CORRIGÉE */}
+<div style={{display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center'}}>
   <span style={s.filterLabel}>Équipe</span>
-  </div>
-  <button 
-    onClick={() => setFilterAssignee(null)} 
-    style={{...s.filterBtn, ...(filterAssignee === null ? {background: '#1a1208', color: '#fff'} : {})}}
-  >
-    Tous
-  </button>
-  {collaborators.map(name => (
+  
+  <div style={{display: 'flex', gap: 5, flexWrap: 'wrap', alignItems: 'center'}}>
     <button 
-      key={name} 
-      onClick={() => setFilterAssignee(filterAssignee === name ? null : name)} 
-      style={{
-        ...s.filterBtn, 
-        ...(filterAssignee === name ? {background: '#c9a84c', color: '#fff', borderColor: '#c9a84c'} : {})
-      }}
+      onClick={() => setFilterAssignee(null)} 
+      style={{...s.filterBtn, ...(filterAssignee === null ? {background: '#1a1208', color: '#fff'} : {})}}
     >
-      👤 {name}
+      Tous
     </button>
-  ))}
+    
+    {collaborators.map(name => (
+      <button 
+        key={name} 
+        onClick={() => setFilterAssignee(filterAssignee === name ? null : name)} 
+        style={{
+          ...s.filterBtn, 
+          // Largeur auto pour éviter l'étirement
+          width: 'auto', 
+          ...(filterAssignee === name ? {background: '#c9a84c', color: '#fff', borderColor: '#c9a84c'} : {})
+        }}
+      >
+        👤 {name}
+      </button>
+    ))}
+  </div>
 </div>
       <div style={{ borderTop: '2px solid #e5e0d5', margin: '10px 0 25px', opacity: 0.9 }} />
       {filtered.length === 0 ? (
@@ -983,7 +989,7 @@ const getCatCount = (catId) => {
 
 const s = {
   app:         {display:'flex',flexDirection:'column',minHeight:'100vh',background:'#f8f6f1'},
-  filterPanel: {background: '#f0f4f8',padding: '18px',borderRadius: '16px',marginBottom: '20px',border: '1px solid #e1e8f0',display: 'flex',flexDirection: 'column',gap: 12},
+  filterPanel: {background: '#f0f4f8',padding: '4px 12px',borderRadius: '16px',marginBottom: '20px',border: '1px solid #e1e8f0',display: 'inline-flex',flexDirection: 'column',gap: 12},
   header:      {position:'sticky',top:0,zIndex:10,background:'#fff',borderBottom:'1px solid #e5e0d5',display:'flex',alignItems:'center',justifyContent:'space-between',padding:'0 20px',height:56,gap:16},
   logo:        {fontFamily:'var(--font-display)',fontSize:22,fontWeight:700,color:'#c9a84c',letterSpacing:'-0.5px',fontStyle:'italic',flexShrink:0},
   nav:         {display:'flex',gap:4},
