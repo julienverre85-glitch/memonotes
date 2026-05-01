@@ -429,14 +429,19 @@ function NoteModal({ note, categories, onSave, onClose, onNewCategory, currentTa
       </select>
     </div>
     <div style={{flex:1}}>
-      <label style={s.label}>Collaborateur</label>
-      <input 
-        style={{...s.input, padding:'7px 10px'}} 
-        placeholder="Nom..." 
-        value={assignee} 
-        onChange={e => setAssignee(e.target.value)} 
-      />
-    </div>
+  <label style={s.label}>Collaborateur</label>
+  <select 
+    style={{...s.input, padding:'7px 10px'}} 
+    value={assignee} 
+    onChange={e => setAssignee(e.target.value)}
+  >
+    <option value="">Personne</option>
+    {/* On affiche les noms de ta liste ici */}
+    {categories.collaborators && categories.collaborators.map(name => (
+      <option key={name} value={name}>{name}</option>
+    ))}
+  </select>
+</div> [cite: 65, 66]
   </div>
 )}
 
@@ -598,6 +603,35 @@ function SettingsView({ session, categories, onCategoriesChange }) {
       <h2 style={s.sectionTitle}>Paramètres</h2>
       <CatSettings categories={categories} onChange={onCategoriesChange} />
       <div style={s.settingsCard}>
+  <h3 style={s.settingsCardTitle}>👥 Liste des collaborateurs</h3>
+  <div style={{display:'flex', gap:8, marginBottom:12}}>
+    <input 
+      id="new-collab" 
+      placeholder="Nom du collaborateur..." 
+      style={{...s.input, flex:1}}
+      onKeyDown={e => {
+        if(e.key === 'Enter' && e.target.value.trim()){
+          onCollaboratorsChange([...collaborators, e.target.value.trim()])
+          e.target.value = ''
+        }
+      }}
+    />
+  </div>
+  <div style={{display:'flex', flexWrap:'wrap', gap:6}}>
+    {collaborators.map(name => (
+      <span key={name} style={{background:'#f0ece3', padding:'4px 10px', borderRadius:20, fontSize:12, display:'flex', alignItems:'center', gap:8}}>
+        {name}
+        <button 
+          onClick={() => onCollaboratorsChange(collaborators.filter(n => n !== name))}
+          style={{border:'none', background:'transparent', cursor:'pointer', fontSize:14}}
+        >
+          ×
+        </button>
+      </span>
+    ))}
+  </div>
+</div>
+      <div style={s.settingsCard}>
         <h3 style={s.settingsCardTitle}>🔔 Notifications push</h3>
         <p style={{color:'#7a6f5e',marginBottom:16,fontSize:14,lineHeight:1.5}}>Autorise les notifications pour recevoir des rappels directement sur cet appareil.</p>
         <button style={{...s.btn,opacity:pushStatus==='loading'?0.6:1}} onClick={subscribePush} disabled={pushStatus==='loading'}>
@@ -636,7 +670,8 @@ export default function App() {
   const [filterCat, setFilterCat]   = useState(null)
   const [search, setSearch]         = useState('')
   const [showDone, setShowDone]     = useState(false)
-
+  const [collaborators, setCollaborators] = useState([])
+  
   useEffect(() => {
     supabase.auth.getSession().then(({data:{session}}) => { setSession(session); setLoading(false) })
     const {data:{subscription}} = supabase.auth.onAuthStateChange((_e,s) => setSession(s))
@@ -653,11 +688,9 @@ export default function App() {
   if (!session) return
   const { data } = await supabase.from('user_settings').select('*').eq('user_id', session.user.id).single()
   
-  if (data?.categories) {
-    // On trie ici aussi pour l'affichage au démarrage
-    const sorted = [...data.categories].sort((a, b) => a.name.localeCompare(b.name))
-    setCategories(sorted)
-  }
+  if (data?.categories) setCategories([...data.categories].sort((a, b) => a.name.localeCompare(b.name)))
+  // AJOUT :
+  if (data?.collaborators) setCollaborators([...data.collaborators].sort()) [cite: 86, 87]
 }, [session])
 
   useEffect(() => { fetchNotes(); fetchSettings() }, [fetchNotes, fetchSettings])
@@ -670,6 +703,16 @@ export default function App() {
   await supabase.from('user_settings').upsert({ 
     user_id: session.user.id, 
     categories: sorted 
+  });
+};
+
+  
+ const saveCollaborators = async (newCollabs) => {
+  const sorted = [...newCollabs].sort(); // Tri par ordre alphabétique
+  setCollaborators(sorted);
+  await supabase.from('user_settings').upsert({ 
+    user_id: session.user.id, 
+    collaborators: sorted 
   });
 };
 
