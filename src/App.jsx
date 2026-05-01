@@ -292,7 +292,7 @@ function NoteCard({ note, categories, onEdit, onDelete }) {
   const pastelBg = isTask ? q.light : '#ffffff';
 
   return (
-    <div style={{...s.card, boxShadow: isTask ? 'none' : '2px 4px 10px rgba(0,0,0,0.05)'
+    <div style={{...s.card, boxShadow: isTask ? 'none' : '2px 4px 10px rgba(0,0,0,0.05)',
                 border: isTask ? '1px solid #e5e0d5' : '1px solid #e5e0d5'
                 }}>
       {isTask && (
