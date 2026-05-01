@@ -633,7 +633,7 @@ export default function App() {
           </div>
           <div style={{display:'flex',gap:5,marginBottom:7,flexWrap:'wrap',alignItems:'center'}}>
             <span style={s.filterLabel}>Priorité</span>
-            {[[0,'Toutes'],[1,'🔴'],[2,'🔵'],[3,'🟡'],[4,'⚫']].map(([k,label]) => (
+            {[[0,'Toutes'],[1,'🔴'],[2,'🔵'],[3,'🟡'],[4,'🟢']].map(([k,label]) => (
               <button key={k} style={{...s.filterBtn,...(filterQ===k?{background:k===0?'#1a1208':Q[k]?.color,color:'#fff'}:{})}} onClick={() => setFilterQ(k)}>{label}</button>
             ))}
           </div>
