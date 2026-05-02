@@ -779,28 +779,41 @@ function CalendarView({ notes }) {
       
       <div style={s.calGrid}>
         {['Lun','Mar','Mer','Jeu','Ven','Sam','Dim'].map(d => <div key={d} style={s.calDayHeader}>{d}</div>)}
-        {cells.map((d, i) => {
-          // On vérifie si c'est aujourd'hui
-          const isToday = d && today.getDate() === d && today.getMonth() === month && today.getFullYear() === year;
-          
-          return (
-            <div key={i} style={{
-              ...s.calCell, 
-              border: isToday ? '2px solid #c9a84c' : '1px solid #e5e0d5', 
-              background: isToday ? '#fffbeb' : (d && notesByDay[d] ? '#fff' : 'transparent'),
-              boxShadow: isToday ? 'inset 0 0 0 1px #c9a84c' : 'none'
-            }}>
-              {d && <>
-                <span style={{fontSize: 11, fontWeight: isToday ? 800 : 600, color: isToday ? '#c9a84c' : '#9a8f7a'}}>{d}</span>
-                {notesByDay[d] && notesByDay[d].map((n, j) => (
-                  <div key={j} style={{...s.calDot, background: Q[n.importance].color}} title={n.title}>
-                    {n.title.slice(0, 12)}
-                  </div>
-                ))}
-              </>}
-            </div>
-          )
-        })}
+       {cells.map((d, i) => {
+  // On vérifie si c'est aujourd'hui
+  const isToday = d && today.getDate() === d && today.getMonth() === month && today.getFullYear() === year;
+  
+  return (
+    <div key={i} style={{
+      ...s.calCell, 
+      // On garde la bordure dorée pour aujourd'hui
+      border: isToday ? '2px solid #c9a84c' : '1px solid #e5e0d5', 
+      
+      // MODIFICATION ICI :
+      // On met du blanc pur pour aujourd'hui (#ffffff)
+      // Et on rend le fond transparent pour tous les autres jours, même avec événements
+      background: isToday ? '#ffffff' : 'transparent',
+      
+      boxShadow: isToday ? 'inset 0 0 0 1px #c9a84c' : 'none'
+    }}>
+      {d && <>
+        <span style={{
+          fontSize: 11, 
+          fontWeight: isToday ? 800 : 600, 
+          color: isToday ? '#c9a84c' : '#9a8f7a'
+        }}>
+          {d}
+        </span>
+        
+        {notesByDay[d] && notesByDay[d].map((n, j) => (
+          <div key={j} style={{...s.calDot, background: Q[n.importance].color}} title={n.title}>
+            {n.title.slice(0, 12)}
+          </div>
+        ))}
+      </>}
+    </div>
+  )
+})}
       </div>
     </div>
   )
