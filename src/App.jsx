@@ -1055,21 +1055,38 @@ const s = {
     borderBottom: '1px solid #e5e0d5',
     display: 'flex',
     alignItems: 'center',
-    justifyContent: 'center', 
-    padding: '0 20px',
+    justifyContent: 'center',
+    padding: '0 10px', // Un peu moins de padding sur les côtés
     height: 56,
     position: 'relative'
   },
   logo: {
     fontFamily: 'var(--font-display)',
-    fontSize: 22,
+    fontSize: 18, // On réduit de 22 à 18 pour gagner de la place sur tel
     fontWeight: 700,
     color: '#c9a84c',
     letterSpacing: '-0.5px',
     fontStyle: 'italic',
     position: 'absolute',
-    left: 20
+    left: 10, // Collé un peu plus à gauche
+    zIndex: 1 // S'assure qu'il ne passe pas dessous
   },
+  nav: {
+    display: 'flex',
+    gap: 2 // On réduit l'espace entre les boutons (de 4 à 2)
+  },
+  navBtn: {
+    background: 'transparent',
+    color: '#9a8f7a',
+    padding: '6px 8px', // On réduit le padding latéral (de 12 à 8)
+    borderRadius: 8,
+    fontSize: 12, // On réduit un poil la police (de 13 à 12)
+    border: 'none',
+    cursor: 'pointer',
+    fontFamily: 'inherit',
+    whiteSpace: 'nowrap'
+  },
+  
   nav:         {display:'flex',gap:4},
   navBtn:      {background:'transparent',color:'#9a8f7a',padding:'6px 12px',borderRadius:8,fontSize:13,border:'none',cursor:'pointer',fontFamily:'inherit'},
   navBtnActive:{background:'#f0ece3',color:'#1a1208'},
