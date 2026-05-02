@@ -855,6 +855,7 @@ export default function App() {
   const [modal, setModal]           = useState(null)
   const [filterQ, setFilterQ]       = useState(0)
   const [filterCats, setFilterCats] = useState([])
+  const [isCatsOpen, setIsCatsOpen] = useState(false);
   const [search, setSearch]         = useState('')
   const [showDone, setShowDone]     = useState(false)
   const [collaborators, setCollaborators] = useState([])
@@ -1045,37 +1046,56 @@ const getCatCount = (catId) => {
                 </div>
               )}
 
-              <div style={{display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center'}}>
-  <span style={s.filterLabel}>Catégories</span>
-  {/* Bouton pour tout réinitialiser */}
-  <button 
-    onClick={() => setFilterCats([])} 
-    style={{...s.filterBtn, ...(filterCats.length === 0 ? {background: '#1a1208', color: '#fff'} : {})}}
-  >
-    Toutes
-  </button>
+             {/* DEBUT DU BLOC CATEGORIES RETRACTABLE */}
+<div style={{display: 'flex', flexDirection: 'column', gap: 8, borderTop: '1px solid #e1e8f0', paddingTop: 8, marginBottom: 10}}>
   
-  {categories.map(c => {
-    const isSelected = filterCats.includes(c.id);
-    return (
+  {/* La barre de titre cliquable */}
+  <div 
+    onClick={() => setIsCatsOpen(!isCatsOpen)} 
+    style={{display:'flex', justifyContent:'space-between', alignItems:'center', cursor:'pointer', padding: '4px 0'}}
+  >
+    <span style={s.filterLabel}>
+      Catégories {filterCats.length > 0 && `(${filterCats.length})`}
+    </span>
+    <span style={{fontSize: 11, color: '#9a8f7a', fontWeight: 600}}>
+      {isCatsOpen ? '▲ Masquer' : '▼ Afficher'}
+    </span>
+  </div>
+  
+  {/* Le tiroir qui s'ouvre ou se ferme */}
+  {isCatsOpen && (
+    <div style={{display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 4, animation: 'fadeIn 0.2s ease'}}>
       <button 
-        key={c.id} 
-        onClick={() => {
-          // Si déjà sélectionnée, on l'enlève, sinon on l'ajoute
-          setFilterCats(isSelected ? filterCats.filter(id => id !== c.id) : [...filterCats, c.id]);
-        }} 
-        style={{
-          ...s.filterBtn, 
-          background: isSelected ? c.color : c.color + '15', 
-          color: isSelected ? '#fff' : c.color, 
-          borderColor: c.color + '55'
-        }}
+        onClick={() => setFilterCats([])} 
+        style={{...s.filterBtn, ...(filterCats.length === 0 ? {background: '#1a1208', color: '#fff'} : {})}}
       >
-        {c.name} 
+        Toutes
       </button>
-    );
-  })}
+      
+      {categories.map(c => {
+        const isSelected = filterCats.includes(c.id);
+        return (
+          <button 
+            key={c.id} 
+            onClick={() => {
+              // Ajoute ou enlève la catégorie du tableau
+              setFilterCats(isSelected ? filterCats.filter(id => id !== c.id) : [...filterCats, c.id]);
+            }} 
+            style={{
+              ...s.filterBtn, 
+              background: isSelected ? c.color : c.color + '15', 
+              color: isSelected ? '#fff' : c.color, 
+              borderColor: c.color + '55'
+            }}
+          >
+            {c.name}
+          </button>
+        );
+      })}
+    </div>
+  )}
 </div>
+
 
               <div style={{display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center'}}>
                 <span style={s.filterLabel}>Qui ?</span>
