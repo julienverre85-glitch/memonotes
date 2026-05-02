@@ -683,6 +683,7 @@ function CatSettings({ categories, onChange }) {
 
 
 /* ──────────────────── CALENDAR ──────────────────── */
+/* ──────────────────── CALENDAR VIEW (CORRIGÉ) ──────────────────── */
 function CalendarView({ notes, onEdit }) {
   const today = new Date()
   const [year, setYear]   = useState(today.getFullYear())
@@ -690,7 +691,6 @@ function CalendarView({ notes, onEdit }) {
   
   const years = Array.from({length: 31}, (_, i) => today.getFullYear() - 15 + i)
 
-  // Fonction pour revenir à aujourd'hui
   const goToToday = () => {
     setMonth(today.getMonth())
     setYear(today.getFullYear())
@@ -719,112 +719,65 @@ function CalendarView({ notes, onEdit }) {
 
   return (
     <div style={s.calWrap}>
-     <div style={s.calHeader}>
-        {/* Flèche Gauche */}
+      <div style={s.calHeader}>
         <button style={s.iconBtn} onClick={prevMonth}>‹</button>
         
-        {/* Groupe central : Mois + Année + Aujourd'hui */}
-        <div style={{display:'flex', gap: 15, alignItems:'center'}}>
-          
-          <div style={{display:'flex', gap: 8, alignItems:'center'}}>
-            {/* Sélecteur Mois avec indicateur visuel */}
+        <div style={{display:'flex', gap: 12, alignItems:'center'}}>
+          <div style={{display:'flex', gap: 4, alignItems:'center'}}>
             <div style={s.selectWrapper}>
-              <select 
-                value={month} 
-                onChange={(e) => setMonth(parseInt(e.target.value))} 
-                style={s.calHeaderSelect}
-              >
+              <select value={month} onChange={(e) => setMonth(parseInt(e.target.value))} style={s.calHeaderSelect}>
                 {MONTHS_FR.map((m, i) => (<option key={i} value={i}>{m}</option>))}
               </select>
               <span style={s.selectChevron}>▼</span>
             </div>
-
-            {/* Sélecteur Année avec indicateur visuel */}
             <div style={s.selectWrapper}>
-              <select 
-                value={year} 
-                onChange={(e) => setYear(parseInt(e.target.value))} 
-                style={s.calHeaderSelect}
-              >
+              <select value={year} onChange={(e) => setYear(parseInt(e.target.value))} style={s.calHeaderSelect}>
                 {years.map(y => (<option key={y} value={y}>{y}</option>))}
               </select>
               <span style={s.selectChevron}>▼</span>
             </div>
           </div>
 
-          {/* Bouton Aujourd'hui à droite de l'année */}
-          <button 
-            onClick={goToToday} 
-            style={{
-              ...s.iconBtn, 
-              fontSize: 18, 
-              background: '#fff', 
-              padding: '6px', 
-              borderRadius: '50%', 
-              boxShadow: '0 2px 5px rgba(0,0,0,0.05)',
-              border: '1px solid #e5e0d5',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center'
-            }} 
-            title="Aujourd'hui"
-          >
-            📅
-          </button>
+          <button onClick={goToToday} style={{...s.iconBtn, fontSize: 18, background: '#fff', padding: '5px', borderRadius: '50%', border: '1px solid #e5e0d5', display: 'flex', alignItems: 'center', justifyContent: 'center'}} title="Aujourd'hui">📅</button>
         </div>
 
-        {/* Flèche Droite */}
         <button style={s.iconBtn} onClick={nextMonth}>›</button>
       </div>
       
       <div style={s.calGrid}>
         {['Lun','Mar','Mer','Jeu','Ven','Sam','Dim'].map(d => <div key={d} style={s.calDayHeader}>{d}</div>)}
-       {cells.map((d, i) => {
-  // On vérifie si c'est aujourd'hui
-  const isToday = d && today.getDate() === d && today.getMonth() === month && today.getFullYear() === year;
-  
-  return (
-    <div key={i} style={{
-      ...s.calCell, 
-      border: isToday ? '2px solid #c9a84c' : '1px solid #e5e0d5', 
-      background: isToday ? '#ffffff' : 'transparent',
-      boxShadow: isToday ? 'inset 0 0 0 1px #c9a84c' : 'none'
-    }}>
-      {d && (
-        <>
-          <span style={{
-            fontSize: 11, 
-            fontWeight: isToday ? 800 : 600, 
-            color: isToday ? '#c9a84c' : '#9a8f7a'
-          }}>
-            {d}
-          </span>
-          
-          {notesByDay[d] && notesByDay[d].map((n, j) => (
-            <div 
-              key={j} 
-              onClick={(e) => { 
-                e.stopPropagation(); 
-                onEdit(n); 
-              }} 
-              style={{
-                ...s.calDot, 
-                background: Q[n.importance].color,
-                cursor: 'pointer',
-                transition: 'transform 0.1s'
-              }} 
-              title={n.title}
-            >
-              {n.title.slice(0, 12)}
+        {cells.map((d, i) => {
+          const isToday = d && today.getDate() === d && today.getMonth() === month && today.getFullYear() === year;
+          return (
+            <div key={i} style={{
+              ...s.calCell, 
+              border: isToday ? '2px solid #c9a84c' : '1px solid #e5e0d5', 
+              background: isToday ? '#ffffff' : 'transparent',
+              boxShadow: isToday ? 'inset 0 0 0 1px #c9a84c' : 'none'
+            }}>
+              {d && (
+                <>
+                  <span style={{fontSize: 11, fontWeight: isToday ? 800 : 600, color: isToday ? '#c9a84c' : '#9a8f7a'}}>{d}</span>
+                  {notesByDay[d] && notesByDay[d].map((n, j) => (
+                    <div 
+                      key={j} 
+                      onClick={(e) => { e.stopPropagation(); onEdit(n); }} 
+                      style={{...s.calDot, background: Q[n.importance].color, cursor: 'pointer'}}
+                    >
+                      {n.title.slice(0, 12)}
+                    </div>
+                  ))}
+                </>
+              )}
             </div>
-          ))}
-        </>
-      )}
+          )
+        })}
+      </div>
     </div>
   )
-})}
+}
 
-/* ──────────────────── SETTINGS ──────────────────── */
+/* ──────────────────── SETTINGS VIEW (COMPLET) ──────────────────── */
 function SettingsView({ session, categories, onCategoriesChange, collaborators, onCollaboratorsChange }) {
   const [pushStatus, setPushStatus] = useState('idle')
   const [pushMsg, setPushMsg]       = useState('')
@@ -834,107 +787,115 @@ function SettingsView({ session, categories, onCategoriesChange, collaborators, 
     try {
       const reg = await navigator.serviceWorker.ready
       const existing = await reg.pushManager.getSubscription()
-      if (existing) { setPushMsg('Notifications push déjà activées ✓'); setPushStatus('ok'); return }
-      const sub = await reg.pushManager.subscribe({ userVisibleOnly:true, applicationServerKey:urlBase64ToUint8Array(VAPID_PUBLIC_KEY) })
+      if (existing) { 
+        setPushMsg('Notifications push déjà activées ✓'); 
+        setPushStatus('ok'); 
+        return 
+      }
+      const sub = await reg.pushManager.subscribe({ 
+        userVisibleOnly: true, 
+        applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY) 
+      })
       const { error } = await supabase.from('push_subscriptions').upsert({
-        user_id:session.user.id, endpoint:sub.endpoint,
-        auth:btoa(String.fromCharCode(...new Uint8Array(sub.getKey('auth')))),
-        p256dh:btoa(String.fromCharCode(...new Uint8Array(sub.getKey('p256dh')))),
+        user_id: session.user.id, 
+        endpoint: sub.endpoint,
+        auth: btoa(String.fromCharCode(...new Uint8Array(sub.getKey('auth')))),
+        p256dh: btoa(String.fromCharCode(...new Uint8Array(sub.getKey('p256dh')))),
       })
       if (error) throw error
-      setPushMsg('Notifications push activées ✓'); setPushStatus('ok')
-    } catch(e) { setPushMsg('Erreur : '+e.message); setPushStatus('error') }
+      setPushMsg('Notifications push activées ✓'); 
+      setPushStatus('ok')
+    } catch(e) { 
+      setPushMsg('Erreur : ' + e.message); 
+      setPushStatus('error') 
+    }
   }
 
-return (
+  return (
     <div style={s.settingsWrap}>
       <h2 style={s.sectionTitle}>Paramètres</h2>
+      
+      {/* 1. CATÉGORIES */}
       <CatSettings categories={categories} onChange={onCategoriesChange} />
       
-      {/* BLOC COLLABORATEURS CORRIGÉ */}
-     <div style={s.settingsCard}>
-  <h3 style={s.settingsCardTitle}>👥 L'Équipe</h3>
-  
-  {/* AJOUT DU BOUTON + ICI */}
-  <div style={{display:'flex', gap:8, marginBottom:12}}>
-    <input 
-      id="new-collab-input" // On ajoute un ID pour pouvoir vider le champ au clic
-      placeholder="Nom du collaborateur..." 
-      style={{...s.input, flex:1}}
-      onKeyDown={e => {
-        if(e.key === 'Enter' && e.target.value.trim()){
-          onCollaboratorsChange([...collaborators, e.target.value.trim()]);
-          e.target.value = '';
-        }
-      }}
-    />
-    <button 
-      style={s.btn} 
-      onClick={() => {
-        const input = document.getElementById('new-collab-input');
-        if(input.value.trim()){
-          onCollaboratorsChange([...collaborators, input.value.trim()]);
-          input.value = '';
-        }
-      }}
-    >
-      ＋
-    </button>
-  </div>
+      {/* 2. L'ÉQUIPE / COLLABORATEURS */}
+      <div style={s.settingsCard}>
+        <h3 style={s.settingsCardTitle}>👥 L'Équipe</h3>
+        <div style={{display:'flex', gap:8, marginBottom:12}}>
+          <input 
+            id="new-collab-input" 
+            placeholder="Nom du collaborateur..." 
+            style={{...s.input, flex:1}}
+            onKeyDown={e => {
+              if(e.key === 'Enter' && e.target.value.trim()){
+                onCollaboratorsChange([...collaborators, e.target.value.trim()]);
+                e.target.value = '';
+              }
+            }}
+          />
+          <button style={s.btn} onClick={() => {
+            const input = document.getElementById('new-collab-input');
+            if(input.value.trim()){
+              onCollaboratorsChange([...collaborators, input.value.trim()]);
+              input.value = '';
+            }
+          }}>＋</button>
+        </div>
+        <div style={{display:'flex', flexWrap:'wrap', gap:6}}>
+          {collaborators && collaborators.map(name => (
+            <span key={name} style={{background:'#f0ece3', color:'#1a1208', padding:'4px 12px', borderRadius:20, fontSize:12, fontWeight: 600, display:'flex', alignItems:'center', gap:8}}>
+              {name}
+              <button onClick={() => onCollaboratorsChange(collaborators.filter(n => n !== name))} style={{border:'none', background:'transparent', cursor:'pointer', fontSize:16, color: '#9a8f7a'}}>×</button>
+            </span>
+          ))}
+        </div>
+      </div>
 
-  <div style={{display:'flex', flexWrap:'wrap', gap:6}}>
-    {collaborators && collaborators.map(name => (
-      <span 
-        key={name} 
-        style={{
-          background:'#f0ece3', 
-          color:'#1a1208', // ON FORCE LE TEXTE EN NOIR LISIBLE ICI
-          padding:'4px 12px', 
-          borderRadius:20, 
-          fontSize:12, 
-          fontWeight: 600, // On le met un peu plus gras
-          display:'flex', 
-          alignItems:'center', 
-          gap:8
-        }}
-      >
-        {name}
-        <button 
-          onClick={() => onCollaboratorsChange(collaborators.filter(n => n !== name))}
-          style={{border:'none', background:'transparent', cursor:'pointer', fontSize:16, color: '#9a8f7a'}}
-        >
-          ×
-        </button>
-      </span>
-    ))}
-  </div>
-</div>
+      {/* 3. NOTIFICATIONS PUSH */}
       <div style={s.settingsCard}>
         <h3 style={s.settingsCardTitle}>🔔 Notifications push</h3>
-        <p style={{color:'#7a6f5e',marginBottom:16,fontSize:14,lineHeight:1.5}}>Autorise les notifications pour recevoir des rappels directement sur cet appareil.</p>
-        <button style={{...s.btn,opacity:pushStatus==='loading'?0.6:1}} onClick={subscribePush} disabled={pushStatus==='loading'}>
-          {pushStatus==='loading' ? '…' : 'Activer les notifications push'}
+        <p style={{color:'#7a6f5e', marginBottom:16, fontSize:14, lineHeight:1.5}}>
+          Autorise les notifications pour recevoir des rappels directement sur cet appareil.
+        </p>
+        <button 
+          style={{...s.btn, opacity: pushStatus === 'loading' ? 0.6 : 1}} 
+          onClick={subscribePush} 
+          disabled={pushStatus === 'loading'}
+        >
+          {pushStatus === 'loading' ? '...' : 'Activer les notifications push'}
         </button>
-        {pushMsg && <p style={{marginTop:10,fontSize:13,color:pushStatus==='ok'?'#16a34a':'#dc2626'}}>{pushMsg}</p>}
+        {pushMsg && <p style={{marginTop:10, fontSize:13, color: pushStatus === 'ok' ? '#16a34a' : '#dc2626'}}>{pushMsg}</p>}
       </div>
+
+      {/* 4. RAPPELS E-MAIL */}
       <div style={s.settingsCard}>
         <h3 style={s.settingsCardTitle}>📧 Rappels par e-mail</h3>
-        <p style={{color:'#7a6f5e',fontSize:14,lineHeight:1.5}}>Les rappels sont envoyés automatiquement à l'heure définie.<br/>Adresse : <strong>{session.user.email}</strong></p>
+        <p style={{color:'#7a6f5e', fontSize:14, lineHeight:1.5}}>
+          Les rappels sont envoyés automatiquement à l'heure définie.<br/>
+          Adresse : <strong>{session.user.email}</strong>
+        </p>
       </div>
+
+      {/* 5. MATRICE D'EISENHOWER */}
       <div style={s.settingsCard}>
         <h3 style={s.settingsCardTitle}>🟩 Matrice d'Eisenhower</h3>
         {Object.entries(Q).map(([k,v]) => (
-          <div key={k} style={{display:'flex',alignItems:'center',gap:12,marginBottom:10}}>
-            <span style={{width:12,height:12,borderRadius:'50%',background:v.color,flexShrink:0}} />
+          <div key={k} style={{display:'flex', alignItems:'center', gap:12, marginBottom:10}}>
+            <span style={{width:12, height:12, borderRadius:'50%', background:v.color, flexShrink:0}} />
             <span style={{fontWeight:500}}>{v.label}</span>
-            <span style={{color:'#9a8f7a',fontSize:13}}> — {v.desc}</span>
+            <span style={{color:'#9a8f7a', fontSize:13}}> — {v.desc}</span>
           </div>
         ))}
       </div>
-      <button style={{...s.btnGhost,marginTop:8}} onClick={() => supabase.auth.signOut()}>Se déconnecter</button>
-    </div>
-  )
-}
+
+      {/* BOUTON DÉCONNEXION */}
+      <button style={{...s.btnGhost, marginTop: 8}} onClick={() => supabase.auth.signOut()}>
+        Se déconnecter
+      </button>
+      
+    </div> // Fin de settingsWrap
+  ) // Fin du return
+} // Fin de la fonction SettingsView
 
 /* ──────────────────── MAIN APP ──────────────────── */
 export default function App() {
