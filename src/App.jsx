@@ -147,27 +147,30 @@ function AuthScreen({ onAuth }) { // On a remis le nom AuthScreen et onAuth
   const [showPassword, setShowPassword] = useState(false)
 
   const handleAuth = async (e) => {
-    e.preventDefault()
-    setLoading(true)
-    
-    if (isLogin) {
-      // CONNEXION
-      const { data, error } = await supabase.auth.signInWithPassword({ email, password })
-      if (error) alert(error.message)
-      else if (onAuth && data.user) onAuth(data.user) // INDISPENSABLE pour entrer dans l'app
-    } else {
-      // INSCRIPTION
-      if (password !== confirmPassword) {
-        alert("Les mots de passe ne correspondent pas !")
-        setLoading(false)
-        return
-      }
-      const { error } = await supabase.auth.signUp({ email, password })
-      if (error) alert(error.message)
-      else alert('Vérifie tes e-mails pour confirmer ton inscription !')
+  e.preventDefault()
+  setLoading(true)
+  
+  if (isLogin) {
+    // CONNEXION SIMPLIFIÉE
+    const { error } = await supabase.auth.signInWithPassword({ email, password })
+    if (error) {
+      alert(error.message)
+      setLoading(false) // On arrête le chargement seulement s'il y a une erreur
     }
+    // Si ça marche, on ne fait RIEN. L'app va basculer toute seule grâce à l'écouteur Supabase.
+  } else {
+    // INSCRIPTION (on garde ta sécurité de mot de passe)
+    if (password !== confirmPassword) {
+      alert("Les mots de passe ne correspondent pas !")
+      setLoading(false)
+      return
+    }
+    const { error } = await supabase.auth.signUp({ email, password })
+    if (error) alert(error.message)
+    else alert('Vérifie tes e-mails pour confirmer ton inscription !')
     setLoading(false)
   }
+}
 
   return (
     <div style={{...s.overlay, background:'#f8f6f1'}}>
@@ -866,6 +869,16 @@ export default function App() {
 
   if (!session) return <AuthScreen onAuth={setSession} />
 
+// SÉCURITÉ ANTI-ÉCRAN NOIR (à insérer ici)
+  if (session && (!notes || !categories)) {
+    return (
+      <div style={{...s.overlay, background:'#f8f6f1', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center'}}>
+        <p style={{fontSize: 40}}>⏳</p>
+        <p style={{color:'#9a8f7a', marginTop:10, fontFamily:'sans-serif'}}>Chargement de votre espace...</p>
+      </div>
+    )
+  }
+    
   const filtered = notes
   .filter(n => {
     if (tab === 'notes') {
