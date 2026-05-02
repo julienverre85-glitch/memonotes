@@ -1038,18 +1038,38 @@ const getCatCount = (catId) => {
 }
 
 const s = {
-  // Dans ton objet s, au début
-app: {
-  display: 'flex',
-  flexDirection: 'column',
-  minHeight: '100vh',
-  background: '#f8f6f1',
-  touchAction: 'manipulation', // <-- C'est "touchAction" sans tiret !
-  overflow: 'hidden' 
-},
+  app: {
+    display: 'flex',
+    flexDirection: 'column',
+    minHeight: '100vh',
+    background: '#f8f6f1',
+    touchAction: 'manipulation', 
+    overflowX: 'hidden' 
+  },
   filterPanel: {background: '#f0f4f8',padding: '4px 12px',borderRadius: '16px',marginBottom: '20px',border: '1px solid #e1e8f0',display: 'inline-flex',flexDirection: 'column',gap: 12},
-  header:      {position:'sticky',top:0,zIndex:10,background:'#fff',borderBottom:'1px solid #e5e0d5',display:'flex',alignItems:'center',justifyContent:'space-between',padding:'0 20px',height:56,gap:16},
-  logo: {fontFamily: 'var(--font-display)',fontSize: 22,fontWeight: 700,color: '#c9a84c',letterSpacing: '-0.5px',fontStyle: 'italic',position: 'absolute',     // On sort le logo du flux pour qu'il ne pousse plus les boutonsleft: 20                  // On le fixe à gauche},
+  header: {
+    position: 'sticky',
+    top: 0,
+    zIndex: 10,
+    background: '#fff',
+    borderBottom: '1px solid #e5e0d5',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center', 
+    padding: '0 20px',
+    height: 56,
+    position: 'relative'
+  },
+  logo: {
+    fontFamily: 'var(--font-display)',
+    fontSize: 22,
+    fontWeight: 700,
+    color: '#c9a84c',
+    letterSpacing: '-0.5px',
+    fontStyle: 'italic',
+    position: 'absolute',
+    left: 20
+  },
   nav:         {display:'flex',gap:4},
   navBtn:      {background:'transparent',color:'#9a8f7a',padding:'6px 12px',borderRadius:8,fontSize:13,border:'none',cursor:'pointer',fontFamily:'inherit'},
   navBtnActive:{background:'#f0ece3',color:'#1a1208'},
@@ -1072,8 +1092,7 @@ app: {
   cardActions: {display:'flex',gap:4},
   overlay:     {position:'fixed',inset:0,background:'rgba(0,0,0,0.35)',backdropFilter:'blur(4px)',zIndex:50,display:'flex',alignItems:'center',justifyContent:'center',padding:16},
   modal:       {background:'#fff',border:'1px solid #e5e0d5',borderRadius:16,width:'100%',maxWidth:520,maxHeight:'90vh',overflow:'hidden',display:'flex',flexDirection:'column',boxShadow:'0 20px 60px rgba(0,0,0,0.15)'},
-  header: {position: 'sticky',top: 0,zIndex: 10,background: '#fff',borderBottom: '1px solid #e5e0d5',display: 'flex',alignItems: 'center',justifyContent: 'center', // On change 'space-between' par 'center' pour tout centrerpadding: '0 20px',height: 56,position: 'relative'      // On ajoute ceci pour pouvoir positionner le logo librement},
-  modalBody: { flex: 1, overflowY: 'auto', padding: '18px 18px 50px', display: 'flex', flexDirection: 'column', gap: 12 },
+  modalBody:   { flex: 1, overflowY: 'auto', padding: '18px 18px 250px', display: 'flex', flexDirection: 'column', gap: 12 },
   modalFooter: {display:'flex',justifyContent:'flex-end',gap:10,padding:18,borderTop:'1px solid #f0ece3'},
   label:       {fontSize:11,fontWeight:600,color:'#9a8f7a',letterSpacing:'0.5px',textTransform:'uppercase'},
   input:       {background:'#f8f6f1',border:'1px solid #e5e0d5',borderRadius:8,color:'#1a1208',padding:'9px 12px',fontSize:14,width:'100%',fontFamily:'inherit'},
@@ -1104,15 +1123,5 @@ app: {
   authToggle:  {background:'transparent',color:'#9a8f7a',fontSize:13,marginTop:12,width:'100%',textDecoration:'underline',cursor:'pointer',border:'none',fontFamily:'inherit'},
   errorTxt:    {color:'#dc2626',fontSize:13,marginBottom:8},
   successTxt:  {color:'#16a34a',fontSize:13,marginBottom:8},
-  // À ajouter à la fin de ton objet s
-dateRow: {
-  display: 'flex',
-  flexDirection: 'column', // En colonne sur mobile pour plus de place
-  gap: 10,
-  padding: '10px',
-  background: '#f8f6f1',
-  borderRadius: '8px',
-  border: '1px solid #e5e0d5'
-}
-}
-}
+  dateRow:     {display: 'flex', flexDirection: 'column', gap: 10, padding: '10px', background: '#f8f6f1', borderRadius: '8px', border: '1px solid #e5e0d5'}
+};
