@@ -138,46 +138,113 @@ function DateTimePicker({ value, onChange }) {
 }
 
 /* ──────────────────── AUTH ──────────────────── */
-function AuthScreen({ onAuth }) {
+function AuthScreen({ onAuth }) { // On a remis le nom AuthScreen et onAuth
+  const [loading, setLoading] = useState(false)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [mode, setMode] = useState('login')
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
-  const [msg, setMsg] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
+  const [isLogin, setIsLogin] = useState(true)
+  const [showPassword, setShowPassword] = useState(false)
 
-  const handle = async () => {
-    setLoading(true); setError(''); setMsg('')
-    const fn = mode === 'login'
-      ? supabase.auth.signInWithPassword({ email, password })
-      : supabase.auth.signUp({ email, password })
-    const { data, error: err } = await fn
+  const handleAuth = async (e) => {
+    e.preventDefault()
+    setLoading(true)
+    
+    if (isLogin) {
+      // CONNEXION
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password })
+      if (error) alert(error.message)
+      else if (onAuth && data.user) onAuth(data.user) // INDISPENSABLE pour entrer dans l'app
+    } else {
+      // INSCRIPTION
+      if (password !== confirmPassword) {
+        alert("Les mots de passe ne correspondent pas !")
+        setLoading(false)
+        return
+      }
+      const { error } = await supabase.auth.signUp({ email, password })
+      if (error) alert(error.message)
+      else alert('Vérifie tes e-mails pour confirmer ton inscription !')
+    }
     setLoading(false)
-    if (err) { setError(err.message); return }
-    if (mode === 'signup') setMsg('Compte créé ! Tu peux te connecter.')
-    else onAuth(data.session)
   }
 
   return (
-    <div style={s.authWrap}>
-      <div style={s.authCard}>
-        <h1 style={s.authTitle}>Mémo</h1>
-        <p style={s.authSub}>Notes & Rappels</p>
-        <div style={s.authFields}>
-          <input style={s.input} type="email" placeholder="Email" value={email}
-            onChange={e => setEmail(e.target.value)} onKeyDown={e => e.key==='Enter' && handle()} />
-          <input style={s.input} type="password" placeholder="Mot de passe" value={password}
-            onChange={e => setPassword(e.target.value)} onKeyDown={e => e.key==='Enter' && handle()} />
+    <div style={{...s.overlay, background:'#f8f6f1'}}>
+      <form onSubmit={handleAuth} style={{...s.modal, maxWidth:360, padding:30}}>
+        <h2 style={{...s.sectionTitle, textAlign:'center', marginBottom:20}}>
+          {isLogin ? 'Connexion' : 'Créer un compte'}
+        </h2>
+        
+        <div style={{display:'flex', flexDirection:'column', gap:15}}>
+          <div>
+            <label style={s.label}>E-mail</label>
+            <input 
+              type="email" 
+              placeholder="ton@email.com" 
+              style={s.input} 
+              value={email} 
+              onChange={e => setEmail(e.target.value)} 
+              required 
+            />
+          </div>
+
+          {/* MOT DE PASSE AVEC ŒIL */}
+          <div style={{position:'relative'}}>
+            <label style={s.label}>Mot de passe</label>
+            <input 
+              type={showPassword ? 'text' : 'password'} 
+              placeholder="••••••••" 
+              style={{...s.input, paddingRight: 40}} 
+              value={password} 
+              onChange={e => setPassword(e.target.value)} 
+              required 
+            />
+            <button 
+              type="button" 
+              onClick={() => setShowPassword(!showPassword)}
+              style={{position:'absolute', right:10, top:32, background:'none', border:'none', cursor:'pointer', fontSize:18}}
+            >
+              {showPassword ? '👁️‍🗨️' : '👁️'}
+            </button>
+          </div>
+
+          {/* CONFIRMATION (Uniquement à l'inscription) */}
+          {!isLogin && (
+            <div>
+              <label style={s.label}>Confirmer le mot de passe</label>
+              <input 
+                type={showPassword ? 'text' : 'password'} 
+                placeholder="••••••••" 
+                style={{
+                  ...s.input, 
+                  borderColor: confirmPassword && password !== confirmPassword ? '#dc2626' : '#e5e0d5'
+                }} 
+                value={confirmPassword} 
+                onChange={e => setConfirmPassword(e.target.value)} 
+                required 
+              />
+              {confirmPassword && password !== confirmPassword && (
+                <p style={{ color: '#dc2626', fontSize: '11px', marginTop: '5px' }}>
+                  Les mots de passe ne correspondent pas
+                </p>
+              )}
+            </div>
+          )}
+
+          <button style={{...s.btn, marginTop:10}} disabled={loading}>
+            {loading ? 'Chargement...' : isLogin ? 'Se connecter' : "S'inscrire"}
+          </button>
         </div>
-        {error && <p style={s.errorTxt}>{error}</p>}
-        {msg   && <p style={s.successTxt}>{msg}</p>}
-        <button style={{...s.btn, width:'100%', opacity: loading ? 0.6 : 1}} onClick={handle} disabled={loading}>
-          {loading ? '…' : mode==='login' ? 'Connexion' : 'Créer un compte'}
+
+        <button 
+          type="button" 
+          onClick={() => { setIsLogin(!isLogin); setConfirmPassword(''); }} 
+          style={{...s.btnGhost, marginTop:15, width:'100%', border:'none'}}
+        >
+          {isLogin ? "Pas de compte ? S'inscrire" : "Déjà un compte ? Se connecter"}
         </button>
-        <button style={s.authToggle} onClick={() => setMode(m => m==='login' ? 'signup' : 'login')}>
-          {mode==='login' ? 'Pas encore de compte ?' : 'Déjà un compte ?'}
-        </button>
-      </div>
+      </form>
     </div>
   )
 }
