@@ -683,14 +683,18 @@ function CatSettings({ categories, onChange }) {
 
 
 /* ──────────────────── CALENDAR ──────────────────── */
-/* ──────────────────── CALENDAR AVEC SELECTEURS ──────────────────── */
 function CalendarView({ notes }) {
   const today = new Date()
   const [year, setYear]   = useState(today.getFullYear())
   const [month, setMonth] = useState(today.getMonth())
   
-  // Générer une liste d'années (ex: 10 ans avant et 10 ans après aujourd'hui)
   const years = Array.from({length: 31}, (_, i) => today.getFullYear() - 15 + i)
+
+  // Fonction pour revenir à aujourd'hui
+  const goToToday = () => {
+    setMonth(today.getMonth())
+    setYear(today.getFullYear())
+  }
 
   const prevMonth = () => { if(month===0){setMonth(11);setYear(y=>y-1)}else setMonth(m=>m-1) }
   const nextMonth = () => { if(month===11){setMonth(0);setYear(y=>y+1)}else setMonth(m=>m+1) }
@@ -716,28 +720,18 @@ function CalendarView({ notes }) {
   return (
     <div style={s.calWrap}>
       <div style={s.calHeader}>
-        <button style={s.iconBtn} onClick={prevMonth}>‹</button>
+        <div style={{display:'flex', gap: 10, alignItems:'center'}}>
+          <button style={s.iconBtn} onClick={prevMonth}>‹</button>
+          {/* Bouton Aujourd'hui */}
+          <button onClick={goToToday} style={{...s.iconBtn, fontSize: 16, background: '#f0ece3', padding: '4px 8px', borderRadius: 8}} title="Aujourd'hui">📅</button>
+        </div>
         
-        {/* LA ZONE DE TITRE DEVIENT INTERACTIVE */}
         <div style={{display:'flex', gap: 4, alignItems:'center'}}>
-          <select 
-            value={month} 
-            onChange={(e) => setMonth(parseInt(e.target.value))}
-            style={s.calHeaderSelect}
-          >
-            {MONTHS_FR.map((m, i) => (
-              <option key={i} value={i}>{m}</option>
-            ))}
+          <select value={month} onChange={(e) => setMonth(parseInt(e.target.value))} style={s.calHeaderSelect}>
+            {MONTHS_FR.map((m, i) => (<option key={i} value={i}>{m}</option>))}
           </select>
-          
-          <select 
-            value={year} 
-            onChange={(e) => setYear(parseInt(e.target.value))}
-            style={s.calHeaderSelect}
-          >
-            {years.map(y => (
-              <option key={y} value={y}>{y}</option>
-            ))}
+          <select value={year} onChange={(e) => setYear(parseInt(e.target.value))} style={s.calHeaderSelect}>
+            {years.map(y => (<option key={y} value={y}>{y}</option>))}
           </select>
         </div>
 
@@ -746,22 +740,33 @@ function CalendarView({ notes }) {
       
       <div style={s.calGrid}>
         {['Lun','Mar','Mer','Jeu','Ven','Sam','Dim'].map(d => <div key={d} style={s.calDayHeader}>{d}</div>)}
-        {cells.map((d, i) => (
-          <div key={i} style={{...s.calCell, border: d && today.getDate() === d && today.getMonth() === month && today.getFullYear() === year ? '1px solid #c9a84c' : '1px solid #e5e0d5', background: d && notesByDay[d] ? '#fff' : 'transparent'}}>
-            {d && <>
-              <span style={{fontSize: 11, fontWeight: 600, color: '#9a8f7a'}}>{d}</span>
-              {notesByDay[d] && notesByDay[d].map((n, j) => (
-                <div key={j} style={{...s.calDot, background: Q[n.importance].color}} title={n.title}>
-                  {n.title.slice(0, 12)}
-                </div>
-              ))}
-            </>}
-          </div>
-        ))}
+        {cells.map((d, i) => {
+          // On vérifie si c'est aujourd'hui
+          const isToday = d && today.getDate() === d && today.getMonth() === month && today.getFullYear() === year;
+          
+          return (
+            <div key={i} style={{
+              ...s.calCell, 
+              border: isToday ? '2px solid #c9a84c' : '1px solid #e5e0d5', 
+              background: isToday ? '#fffbeb' : (d && notesByDay[d] ? '#fff' : 'transparent'),
+              boxShadow: isToday ? 'inset 0 0 0 1px #c9a84c' : 'none'
+            }}>
+              {d && <>
+                <span style={{fontSize: 11, fontWeight: isToday ? 800 : 600, color: isToday ? '#c9a84c' : '#9a8f7a'}}>{d}</span>
+                {notesByDay[d] && notesByDay[d].map((n, j) => (
+                  <div key={j} style={{...s.calDot, background: Q[n.importance].color}} title={n.title}>
+                    {n.title.slice(0, 12)}
+                  </div>
+                ))}
+              </>}
+            </div>
+          )
+        })}
       </div>
     </div>
   )
 }
+
 /* ──────────────────── SETTINGS ──────────────────── */
 function SettingsView({ session, categories, onCategoriesChange, collaborators, onCollaboratorsChange }) {
   const [pushStatus, setPushStatus] = useState('idle')
