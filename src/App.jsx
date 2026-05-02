@@ -1115,3 +1115,4 @@ dateRow: {
   border: '1px solid #e5e0d5'
 }
 }
+}
