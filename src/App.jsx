@@ -1051,16 +1051,22 @@ const getCatCount = (catId) => {
   
   {/* La barre de titre cliquable */}
   <div 
-    onClick={() => setIsCatsOpen(!isCatsOpen)} 
-    style={{display:'flex', justifyContent:'space-between', alignItems:'center', cursor:'pointer', padding: '4px 0'}}
-  >
-    <span style={s.filterLabel}>
-      Catégories {filterCats.length > 0 && `(${filterCats.length})`}
-    </span>
-    <span style={{fontSize: 11, color: '#9a8f7a', fontWeight: 600}}>
-      {isCatsOpen ? '▲ Masquer' : '▼ Afficher'}
-    </span>
-  </div>
+  onClick={() => setIsCatsOpen(!isCatsOpen)} 
+  style={{
+    display: 'flex', 
+    alignItems: 'center', 
+    gap: 10, // <--- C'est ici qu'on gère l'écart entre le titre et le bouton
+    cursor: 'pointer', 
+    padding: '4px 0'
+  }}
+>
+  <span style={s.filterLabel}>
+    Catégories {filterCats.length > 0 && `(${filterCats.length})`}
+  </span>
+  <span style={{fontSize: 11, color: '#9a8f7a', fontWeight: 600}}>
+    {isCatsOpen ? '▲ Masquer' : '▼ Afficher'}
+  </span>
+</div>
   
   {/* Le tiroir qui s'ouvre ou se ferme */}
   {isCatsOpen && (
