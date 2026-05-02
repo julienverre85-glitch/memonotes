@@ -590,11 +590,13 @@ function NoteModal({ note, categories, collaborators, onSave, onClose, onNewCate
 } 
 
 /* ──────────────────── CAT SETTINGS ──────────────────── */
+/* ──────────────────── CAT SETTINGS (Version avec changement de couleur) ──────────────────── */
 function CatSettings({ categories, onChange }) {
   const [newName, setNewName]   = useState('')
   const [newColor, setNewColor] = useState(CAT_PALETTE[0])
   const [editId, setEditId]     = useState(null)
   const [editName, setEditName] = useState('')
+  const [editColor, setEditColor] = useState('') // On ajoute l'état pour la couleur éditée [cite: 84]
 
   const add = () => {
     if (!newName.trim()) return
@@ -605,45 +607,80 @@ function CatSettings({ categories, onChange }) {
   return (
     <div style={s.settingsCard}>
       <h3 style={s.settingsCardTitle}>🏷️ Mes catégories</h3>
-      <div style={{display:'flex',flexDirection:'column',gap:6,marginBottom:14}}>
-        {categories.length===0 && <p style={{color:'#9a8f7a',fontSize:13}}>Aucune catégorie pour l'instant.</p>}
+      <div style={{display:'flex', flexDirection:'column', gap:8, marginBottom:14}}>
+        {categories.length === 0 && <p style={{color:'#9a8f7a', fontSize:13}}>Aucune catégorie pour l'instant.</p>}
         {categories.map(c => (
-          <div key={c.id} style={{display:'flex',alignItems:'center',gap:8,padding:'7px 10px',background:'#f8f6f1',borderRadius:8}}>
-            <span style={{width:12,height:12,borderRadius:'50%',background:c.color,flexShrink:0}} />
-            {editId===c.id
-              ? <input autoFocus value={editName} onChange={e => setEditName(e.target.value)}
-                  onKeyDown={e => { if(e.key==='Enter'){onChange(categories.map(x=>x.id===c.id?{...x,name:editName}:x));setEditId(null)}}}
-                  style={{flex:1,border:'1px solid #e5e0d5',borderRadius:6,padding:'3px 8px',fontSize:13,fontFamily:'inherit',background:'#fff'}} />
-              : <span style={{flex:1,fontSize:13,color:'#1a1208'}}>{c.name}</span>
-            }
-            {editId===c.id
-              ? <button onClick={() => {onChange(categories.map(x=>x.id===c.id?{...x,name:editName}:x));setEditId(null)}} style={{background:'#16a34a',color:'#fff',border:'none',borderRadius:6,padding:'3px 8px',fontSize:11,cursor:'pointer',fontFamily:'inherit'}}>✓</button>
-              : <button onClick={() => {setEditId(c.id);setEditName(c.name)}} style={{background:'transparent',border:'none',cursor:'pointer',fontSize:13,color:'#9a8f7a',padding:'2px 4px'}}>✏️</button>
-            }
-            <button onClick={() => onChange(categories.filter(x=>x.id!==c.id))} style={{background:'transparent',border:'none',cursor:'pointer',fontSize:13,color:'#9a8f7a',padding:'2px 4px'}}>🗑️</button>
+          <div key={c.id} style={{display:'flex', flexDirection:'column', gap:4, padding:'10px', background:'#f8f6f1', borderRadius:10}}>
+            <div style={{display:'flex', alignItems:'center', gap:8}}>
+              {/* Le point de couleur change dynamiquement pendant l'édition */}
+              <span style={{width:14, height:14, borderRadius:'50%', background: editId === c.id ? editColor : c.color, flexShrink:0}} />
+              
+              {editId === c.id ? (
+                <input 
+                  autoFocus 
+                  value={editName} 
+                  onChange={e => setEditName(e.target.value)}
+                  style={{flex:1, border:'1px solid #e5e0d5', borderRadius:6, padding:'4px 8px', fontSize:13, background:'#fff'}} 
+                />
+              ) : (
+                <span style={{flex:1, fontSize:13, color:'#1a1208', fontWeight: 500}}>{c.name}</span>
+              )}
+
+              {editId === c.id ? (
+                <button 
+                  onClick={() => {
+                    onChange(categories.map(x => x.id === c.id ? {...x, name:editName, color:editColor} : x));
+                    setEditId(null);
+                  }} 
+                  style={{background:'#16a34a', color:'#fff', border:'none', borderRadius:6, padding:'4px 10px', fontSize:11, cursor:'pointer'}}
+                >
+                  Enregistrer
+                </button>
+              ) : (
+                <>
+                  <button onClick={() => {setEditId(c.id); setEditName(c.name); setEditColor(c.color)}} style={{background:'transparent', border:'none', cursor:'pointer', fontSize:14}}>✏️</button>
+                  <button onClick={() => onChange(categories.filter(x => x.id !== c.id))} style={{background:'transparent', border:'none', cursor:'pointer', fontSize:14}}>🗑️</button>
+                </>
+              )}
+            </div>
+
+            {/* PALETTE QUI APPARAÎT SEULEMENT LORS DE L'ÉDITION */}
+            {editId === c.id && (
+              <div style={{display:'flex', gap:6, flexWrap:'wrap', marginTop:8, padding:'8px', background:'#fff', borderRadius:8, border:'1px solid #e5e0d5'}}>
+                {CAT_PALETTE.map(col => (
+                  <button 
+                    key={col} 
+                    onClick={() => setEditColor(col)} 
+                    style={{
+                      width:22, height:22, borderRadius:'50%', background:col, 
+                      border: editColor === col ? '2px solid #1a1208' : '1px solid transparent', 
+                      cursor:'pointer', padding:0
+                    }} 
+                  />
+                ))}
+              </div>
+            )}
           </div>
         ))}
       </div>
-      <div style={{borderTop:'1px solid #f0ece3',paddingTop:12}}>
-        <p style={{...s.label,marginBottom:8}}>Nouvelle catégorie</p>
-        <div style={{display:'flex',gap:8,alignItems:'center',marginBottom:8}}>
-          <input value={newName} onChange={e => setNewName(e.target.value)} onKeyDown={e => e.key==='Enter' && add()} placeholder="Nom…"
-            style={{flex:1,background:'#f8f6f1',border:'1px solid #e5e0d5',borderRadius:8,padding:'7px 10px',fontSize:13,color:'#1a1208',fontFamily:'inherit'}} />
-          <button onClick={add} style={{...s.btn,whiteSpace:'nowrap'}}>＋ Ajouter</button>
+
+      {/* Le reste (Nouvelle catégorie) ne change pas */}
+      <div style={{borderTop:'1px solid #f0ece3', paddingTop:12}}>
+        <p style={{...s.label, marginBottom:8}}>Nouvelle catégorie</p>
+        <div style={{display:'flex', gap:8, alignItems:'center', marginBottom:8}}>
+          <input value={newName} onChange={e => setNewName(e.target.value)} placeholder="Nom…" style={{...s.input, flex:1}} />
+          <button onClick={add} style={s.btn}>＋ Ajouter</button>
         </div>
-        <div style={{display:'flex',gap:6,flexWrap:'wrap'}}>
+        <div style={{display:'flex', gap:6, flexWrap:'wrap'}}>
           {CAT_PALETTE.map(col => (
-            <button 
-              key={col} 
-              onClick={() => setNewColor(col)} 
-              style={{width:22,height:22,borderRadius:'50%',background:col,border:newColor===col?'3px solid #1a1208':'2px solid transparent',cursor:'pointer',outline:'none'}} 
-            />
+            <button key={col} onClick={() => setNewColor(col)} style={{width:22, height:22, borderRadius:'50%', background:col, border:newColor===col?'3px solid #1a1208':'2px solid transparent', cursor:'pointer'}} />
           ))}
         </div>
       </div>
     </div>
   )
 }
+
 
 /* ──────────────────── CALENDAR ──────────────────── */
 function CalendarView({ notes }) {
