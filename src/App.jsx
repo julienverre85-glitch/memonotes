@@ -926,19 +926,19 @@ const getCatCount = (catId) => {
       <header style={s.header}>
         <h1 style={s.logo}>Mémo</h1>
         
-      <nav style={s.nav}>
+     <nav style={s.nav}>
   {[
     ['notes', '📋 Tâches'],
     ['simple_notes', '📝 Notes'],
     ['calendar', '📅 Calendrier'],
-    ['settings', '⚙️ Paramètres'] // On peut remettre le mot ici aussi
+    ['settings', '⚙️ Paramètres']
   ].map(([id, label]) => (
     <button 
       key={id} 
       style={{...s.navBtn, ...(tab === id ? s.navBtnActive : {})}} 
       onClick={() => setTab(id)}
     >
-      {label} {/* On affiche à nouveau tout le texte */}
+      {label}
     </button>
   ))}
 </nav>
@@ -1061,33 +1061,36 @@ const s = {
     background: '#fff',
     borderBottom: '1px solid #e5e0d5',
     display: 'flex',
+    flexDirection: 'column', // Empile le logo et la navigation
     alignItems: 'center',
     justifyContent: 'center',
-    padding: '0 10px',
-    height: 60, // Un poil plus haut pour le confort
-    position: 'relative'
+    padding: '8px 0',
+    height: 'auto', // La hauteur s'adapte maintenant au contenu
+    minHeight: 75  // Hauteur minimum pour garder un beau bandeau
   },
   logo: {
     fontFamily: 'var(--font-display)',
-    fontSize: 15, // On le réduit encore un peu pour laisser la place aux noms sur tel
+    fontSize: 20, // On peut le remettre un peu plus grand car il a sa propre ligne
     fontWeight: 700,
     color: '#c9a84c',
     letterSpacing: '-0.5px',
     fontStyle: 'italic',
-    position: 'absolute',
-    left: 8,
-    zIndex: 1
+    marginBottom: 2 // Petit espace avant les boutons
   },
   nav: {
     display: 'flex',
-    gap: 1 // Espace minimum pour que tout rentre sur une seule ligne
+    gap: 4, // On remet un peu d'espace entre les boutons
+    width: '100%',
+    justifyContent: 'center',
+    overflowX: 'auto', // Permet de faire glisser si l'écran est minuscule
+    padding: '0 10px'
   },
   navBtn: {
     background: 'transparent',
     color: '#9a8f7a',
-    padding: '6px 4px', // Padding très réduit sur les côtés pour le mobile
+    padding: '6px 10px', // On remet un padding confortable
     borderRadius: 8,
-    fontSize: 14, // ON AGRANDIT ICI (était à 11 ou 12)
+    fontSize: 14, // Taille bien lisible sur ordi et tel
     border: 'none',
     cursor: 'pointer',
     fontFamily: 'inherit',
@@ -1095,11 +1098,6 @@ const s = {
     display: 'flex',
     alignItems: 'center',
     gap: 4
-  },
-  navBtnActive: {
-    background: '#f0ece3',
-    color: '#1a1208',
-    fontWeight: '600'
   },
   
   navBtnActive:{background:'#f0ece3',color:'#1a1208'},
