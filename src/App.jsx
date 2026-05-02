@@ -817,7 +817,7 @@ export default function App() {
   const [tab, setTab]               = useState('notes')
   const [modal, setModal]           = useState(null)
   const [filterQ, setFilterQ]       = useState(0)
-  const [filterCat, setFilterCat]   = useState(null)
+  const [filterCats, setFilterCats] = useState([])
   const [search, setSearch]         = useState('')
   const [showDone, setShowDone]     = useState(false)
   const [collaborators, setCollaborators] = useState([])
@@ -928,7 +928,7 @@ export default function App() {
     return true;
   })
   .filter(n => filterQ === 0 || n.importance === filterQ)
-  .filter(n => !filterCat || (n.cats || []).includes(filterCat))
+  .filter(n => filterCats.length === 0 || filterCats.some(id => (n.cats || []).includes(id)))
   .filter(n => !search || n.title.toLowerCase().includes(search.toLowerCase()) || (n.content || '').toLowerCase().includes(search.toLowerCase()))
   .filter(n => !filterAssignee || (n.assignees || []).includes(filterAssignee))
   // LE TRI INTELLIGENT
@@ -1009,12 +1009,36 @@ const getCatCount = (catId) => {
               )}
 
               <div style={{display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center'}}>
-                <span style={s.filterLabel}>Catégories</span>
-                <button onClick={() => setFilterCat(null)} style={{...s.filterBtn, ...(filterCat === null ? {background: '#1a1208', color: '#fff'} : {})}}>Toutes</button>
-                {categories.map(c => (
-                  <button key={c.id} onClick={() => setFilterCat(filterCat === c.id ? null : c.id)} style={{...s.filterBtn, background: filterCat === c.id ? c.color : c.color + '15', color: filterCat === c.id ? '#fff' : c.color, borderColor: c.color + '55'}}>{c.name}</button>
-                ))}
-              </div>
+  <span style={s.filterLabel}>Catégories</span>
+  {/* Bouton pour tout réinitialiser */}
+  <button 
+    onClick={() => setFilterCats([])} 
+    style={{...s.filterBtn, ...(filterCats.length === 0 ? {background: '#1a1208', color: '#fff'} : {})}}
+  >
+    Toutes [cite: 132]
+  </button>
+  
+  {categories.map(c => {
+    const isSelected = filterCats.includes(c.id);
+    return (
+      <button 
+        key={c.id} 
+        onClick={() => {
+          // Si déjà sélectionnée, on l'enlève, sinon on l'ajoute
+          setFilterCats(isSelected ? filterCats.filter(id => id !== c.id) : [...filterCats, c.id]);
+        }} 
+        style={{
+          ...s.filterBtn, 
+          background: isSelected ? c.color : c.color + '15', 
+          color: isSelected ? '#fff' : c.color, 
+          borderColor: c.color + '55'
+        }}
+      >
+        {c.name} 
+      </button>
+    );
+  })}
+</div>
 
               <div style={{display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center'}}>
                 <span style={s.filterLabel}>Qui ?</span>
