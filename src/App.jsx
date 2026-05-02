@@ -1158,21 +1158,19 @@ const s = {
     touchAction: 'manipulation', 
     overflowX: 'hidden' 
   },
-  filterPanel: {background: '#f0f4f8',padding: '4px 12px',borderRadius: '16px',marginBottom: '20px',border: '1px solid #e1e8f0',display: 'inline-flex',flexDirection: 'column',gap: 12},
-  header: {
-    position: 'sticky',
-    top: 0,
-    zIndex: 10,
-    background: '#fff',
-    borderBottom: '1px solid #e5e0d5',
-    display: 'flex',
-    flexDirection: 'column', // Empile le logo et la navigation
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: '8px 0',
-    height: 'auto', // La hauteur s'adapte maintenant au contenu
-    minHeight: 75  // Hauteur minimum pour garder un beau bandeau
-  },
+  
+filterPanel: { 
+  background: '#f0f4f8', 
+  padding: '16px', // On augmente un peu le padding pour que ce soit plus aéré
+  borderRadius: '16px', 
+  marginBottom: '20px', 
+  border: '1px solid #e1e8f0', 
+  display: 'flex', // <--- On met 'flex' à la place de 'inline-flex'
+  flexDirection: 'column', 
+  gap: 12,
+  width: '100%' // <--- On force la largeur à 100% du conteneur
+},
+  
   logo: {
     fontFamily: 'var(--font-display)',
     fontSize: 20, // On peut le remettre un peu plus grand car il a sa propre ligne
