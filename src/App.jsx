@@ -1077,20 +1077,17 @@ const s = {
     fontStyle: 'italic',
     marginBottom: 2 // Petit espace avant les boutons
   },
-  nav: {
+ nav: {
     display: 'flex',
-    gap: 4, // On remet un peu d'espace entre les boutons
-    width: '100%',
-    justifyContent: 'center',
-    overflowX: 'auto', // Permet de faire glisser si l'écran est minuscule
-    padding: '0 10px'
+    gap: 2, // On réduit l'écart entre les boutons pour les rapprocher du centre 
+    justifyContent: 'center'
   },
   navBtn: {
     background: 'transparent',
     color: '#9a8f7a',
-    padding: '6px 10px', // On remet un padding confortable
+    padding: '6px 6px', // On réduit le padding latéral (de 12px à 6px) pour "tirer" les boutons vers l'intérieur 
     borderRadius: 8,
-    fontSize: 14, // Taille bien lisible sur ordi et tel
+    fontSize: 13, // On garde une taille lisible 
     border: 'none',
     cursor: 'pointer',
     fontFamily: 'inherit',
