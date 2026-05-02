@@ -841,7 +841,7 @@ export default function App() {
   
   if (data?.categories) setCategories([...data.categories].sort((a, b) => a.name.localeCompare(b.name)))
   
-  // CORRECTION : On enlève le texte [cite: 86, 87] qui était ici
+  // CORRECTION : On enlève le texte qui était ici
   if (data?.collaborators) setCollaborators([...data.collaborators].sort()) 
 }, [session])
 
@@ -1015,7 +1015,7 @@ const getCatCount = (catId) => {
     onClick={() => setFilterCats([])} 
     style={{...s.filterBtn, ...(filterCats.length === 0 ? {background: '#1a1208', color: '#fff'} : {})}}
   >
-    Toutes [cite: 132]
+    Toutes
   </button>
   
   {categories.map(c => {
