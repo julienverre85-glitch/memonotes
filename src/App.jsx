@@ -786,48 +786,43 @@ function CalendarView({ notes, onEdit }) {
   return (
     <div key={i} style={{
       ...s.calCell, 
-      // On garde la bordure dorée pour aujourd'hui
       border: isToday ? '2px solid #c9a84c' : '1px solid #e5e0d5', 
-      
-      // MODIFICATION ICI :
-      // On met du blanc pur pour aujourd'hui (#ffffff)
-      // Et on rend le fond transparent pour tous les autres jours, même avec événements
       background: isToday ? '#ffffff' : 'transparent',
-      
       boxShadow: isToday ? 'inset 0 0 0 1px #c9a84c' : 'none'
     }}>
-      {d && <>
-        <span style={{
-          fontSize: 11, 
-          fontWeight: isToday ? 800 : 600, 
-          color: isToday ? '#c9a84c' : '#9a8f7a'
-        }}>
-          {d}
-        </span>
-        
-        {notesByDay[d] && notesByDay[d].map((n, j) => (
-  <div 
-    key={j} 
-    // On déclenche l'ouverture de la fiche au clic
-    onClick={(e) => { 
-      e.stopPropagation(); // Empêche d'autres clics fantômes
-      onEdit(n); 
-    }} 
-    style={{
-      ...s.calDot, 
-      background: Q[n.importance].color,
-      cursor: 'pointer', // Pour montrer que c'est cliquable
-      transition: 'transform 0.1s'
-    }} 
-    title={n.title}
-  >
-    {n.title.slice(0, 12)}
-  </div>
-))}
-      </div>
+      {d && (
+        <>
+          <span style={{
+            fontSize: 11, 
+            fontWeight: isToday ? 800 : 600, 
+            color: isToday ? '#c9a84c' : '#9a8f7a'
+          }}>
+            {d}
+          </span>
+          
+          {notesByDay[d] && notesByDay[d].map((n, j) => (
+            <div 
+              key={j} 
+              onClick={(e) => { 
+                e.stopPropagation(); 
+                onEdit(n); 
+              }} 
+              style={{
+                ...s.calDot, 
+                background: Q[n.importance].color,
+                cursor: 'pointer',
+                transition: 'transform 0.1s'
+              }} 
+              title={n.title}
+            >
+              {n.title.slice(0, 12)}
+            </div>
+          ))}
+        </>
+      )}
     </div>
   )
-}
+})}
 
 /* ──────────────────── SETTINGS ──────────────────── */
 function SettingsView({ session, categories, onCategoriesChange, collaborators, onCollaboratorsChange }) {
