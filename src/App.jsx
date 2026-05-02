@@ -1229,15 +1229,30 @@ filterPanel: {
   width: '100%' // <--- On force la largeur à 100% du conteneur
 },
   
-  logo: {
-    fontFamily: 'var(--font-display)',
-    fontSize: 20, // On peut le remettre un peu plus grand car il a sa propre ligne
-    fontWeight: 700,
-    color: '#c9a84c',
-    letterSpacing: '-0.5px',
-    fontStyle: 'italic',
-    marginBottom: 2 // Petit espace avant les boutons
-  },
+  // À modifier dans ton objet "s" tout en bas :
+header: { 
+  position: 'sticky', 
+  top: 0, 
+  zIndex: 10, 
+  background: '#fff', 
+  borderBottom: '1px solid #e5e0d5', 
+  display: 'flex', 
+  flexDirection: 'column', 
+  alignItems: 'center', // <--- Aligne tout le contenu (logo + nav) au centre
+  justifyContent: 'center',
+  padding: '10px 0',
+  width: '100%'
+},
+logo: { 
+  fontFamily: 'serif', 
+  fontSize: 22, 
+  fontWeight: 700, 
+  color: '#c9a84c', 
+  fontStyle: 'italic',
+  textAlign: 'center', // <--- Sécurité supplémentaire pour le texte
+  margin: '0 0 5px 0', // Petit espace sous le logo avant les boutons
+  width: '100%'
+},
  nav: {
     display: 'flex',
     gap: 2, // On réduit l'écart entre les boutons pour les rapprocher du centre 
