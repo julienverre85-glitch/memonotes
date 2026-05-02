@@ -24,8 +24,9 @@ function urlBase64ToUint8Array(base64String) {
 /* ──────────────────── DATE TIME PICKER ──────────────────── */
 /* ──────────────────── DATE TIME PICKER (Version Popover Compacte) ──────────────────── */
 /* ──────────────────── DATE TIME PICKER (Indépendant) ──────────────────── */
+/* ──────────────────── DATE TIME PICKER (Correction Mobile) ──────────────────── */
 function DateTimePicker({ value, onChange }) {
-  const [openPart, setOpenPart] = useState(null) // 'date' ou 'time'
+  const [openPart, setOpenPart] = useState(null)
   const pickerRef = useRef(null)
   const today = new Date()
   
@@ -37,7 +38,6 @@ function DateTimePicker({ value, onChange }) {
   const [hour, setHour]   = useState(parsed ? parsed.getHours() : 9)
   const [minute, setMinute] = useState(parsed ? Math.round(parsed.getMinutes()/5)*5 : 0)
 
-  // Fermer les menus si on clique ailleurs
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (pickerRef.current && !pickerRef.current.contains(e.target)) setOpenPart(null)
@@ -45,6 +45,19 @@ function DateTimePicker({ value, onChange }) {
     document.addEventListener('mousedown', handleClickOutside)
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
+
+  // LA FONCTION MAGIQUE : Elle ouvre le menu ET centre l'écran dessus
+  const handleOpen = (e, part) => {
+    const isOpening = openPart !== part;
+    setOpenPart(isOpening ? part : null);
+    
+    if (isOpening) {
+      // On attend un tout petit peu que le menu s'affiche pour scroller
+      setTimeout(() => {
+        e.currentTarget.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 100);
+    }
+  }
 
   const updateGlobal = (newDay, newHour, newMin) => {
     const dt = new Date(year, month, newDay, newHour, newMin)
@@ -71,7 +84,7 @@ function DateTimePicker({ value, onChange }) {
       {/* BLOC DATE */}
       <div style={{ flex: 1, position: 'relative' }}>
         <label style={s.label}>Date</label>
-        <div onClick={() => setOpenPart(openPart === 'date' ? null : 'date')} 
+        <div onClick={(e) => handleOpen(e, 'date')} 
              style={{ ...s.input, cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <span style={{color: parsed ? '#1a1208' : '#9a8f7a'}}>{displayDate}</span>
           <span>📅</span>
@@ -102,15 +115,13 @@ function DateTimePicker({ value, onChange }) {
       {/* BLOC HEURE */}
       <div style={{ width: 120, position: 'relative' }}>
         <label style={s.label}>Heure</label>
-        <div onClick={() => setOpenPart(openPart === 'time' ? null : 'time')} 
+        <div onClick={(e) => handleOpen(e, 'time')} 
              style={{ ...s.input, cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <span style={{color: parsed ? '#1a1208' : '#9a8f7a'}}>{displayTime}</span>
           <span>🕒</span>
         </div>
-
         {openPart === 'time' && (
           <div style={{ ...popoverStyle, width: 110, display: 'flex', gap: 5 }}>
-            {/* Heures */}
             <div style={{ height: 150, overflowY: 'auto', flex: 1, borderRight: '1px solid #f0ece3' }}>
               {Array.from({length:24},(_,i)=>i).map(h => (
                 <div key={h} onClick={() => { setHour(h); updateGlobal(day, h, minute); }} 
@@ -120,7 +131,6 @@ function DateTimePicker({ value, onChange }) {
                 </div>
               ))}
             </div>
-            {/* Minutes */}
             <div style={{ height: 150, overflowY: 'auto', flex: 1 }}>
               {[0,5,10,15,20,25,30,35,40,45,50,55].map(m => (
                 <div key={m} onClick={() => { setMinute(m); updateGlobal(day, hour, m); }} 
@@ -1050,7 +1060,7 @@ const s = {
   overlay:     {position:'fixed',inset:0,background:'rgba(0,0,0,0.35)',backdropFilter:'blur(4px)',zIndex:50,display:'flex',alignItems:'center',justifyContent:'center',padding:16},
   modal:       {background:'#fff',border:'1px solid #e5e0d5',borderRadius:16,width:'100%',maxWidth:520,maxHeight:'90vh',overflow:'hidden',display:'flex',flexDirection:'column',boxShadow:'0 20px 60px rgba(0,0,0,0.15)'},
   modalHeader: {display:'flex',alignItems:'center',justifyContent:'space-between',padding:'14px 18px'},
-  modalBody:   {flex:1,overflowY:'auto',padding:'18px 18px 0',display:'flex',flexDirection:'column',gap:12},
+  modalBody: { flex: 1, overflowY: 'auto', padding: '18px 18px 150px', display: 'flex', flexDirection: 'column', gap: 12 },
   modalFooter: {display:'flex',justifyContent:'flex-end',gap:10,padding:18,borderTop:'1px solid #f0ece3'},
   label:       {fontSize:11,fontWeight:600,color:'#9a8f7a',letterSpacing:'0.5px',textTransform:'uppercase'},
   input:       {background:'#f8f6f1',border:'1px solid #e5e0d5',borderRadius:8,color:'#1a1208',padding:'9px 12px',fontSize:14,width:'100%',fontFamily:'inherit'},
@@ -1081,4 +1091,14 @@ const s = {
   authToggle:  {background:'transparent',color:'#9a8f7a',fontSize:13,marginTop:12,width:'100%',textDecoration:'underline',cursor:'pointer',border:'none',fontFamily:'inherit'},
   errorTxt:    {color:'#dc2626',fontSize:13,marginBottom:8},
   successTxt:  {color:'#16a34a',fontSize:13,marginBottom:8},
+  // À ajouter à la fin de ton objet s
+dateRow: {
+  display: 'flex',
+  flexDirection: 'column', // En colonne sur mobile pour plus de place
+  gap: 10,
+  padding: '10px',
+  background: '#f8f6f1',
+  borderRadius: '8px',
+  border: '1px solid #e5e0d5'
+}
 }
