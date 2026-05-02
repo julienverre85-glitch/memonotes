@@ -7,7 +7,7 @@ const Q = {
   1: { label: 'Urgent · Important',       color: '#dc2626', light: 'rgba(220,38,38,0.10)',  emoji: '🔴', desc: 'À Faire maintenant' },
   2: { label: 'Important · Pas urgent',   color: '#2563eb', light: 'rgba(37,99,235,0.10)',  emoji: '🔵', desc: 'À Planifier'        },
   3: { label: 'Urgent · Pas important',   color: '#d97706', light: 'rgba(217,119,6,0.10)',  emoji: '🟡', desc: 'À Déléguer'         },
-  4: { label: 'Ni urgent · Ni important', color: '#6b7280', light: 'rgba(107,114,128,0.10)',emoji: '🟢', desc: 'À méditer'        },
+  4: { label: 'Ni urgent · Ni important', color: '#16a34a', light: 'rgba(22,163,74,0.10)', emoji: '🟢', desc: 'À méditer' },
 }
 
 const CAT_PALETTE = ['#16a34a','#2563eb','#9333ea','#db2777','#ea580c','#0891b2','#65a30d','#854d0e','#475569','#b45309']
