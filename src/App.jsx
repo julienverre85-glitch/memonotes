@@ -683,7 +683,7 @@ function CatSettings({ categories, onChange }) {
 
 
 /* ──────────────────── CALENDAR ──────────────────── */
-function CalendarView({ notes }) {
+function CalendarView({ notes, onEdit }) {
   const today = new Date()
   const [year, setYear]   = useState(today.getFullYear())
   const [month, setMonth] = useState(today.getMonth())
@@ -806,14 +806,24 @@ function CalendarView({ notes }) {
         </span>
         
         {notesByDay[d] && notesByDay[d].map((n, j) => (
-          <div key={j} style={{...s.calDot, background: Q[n.importance].color}} title={n.title}>
-            {n.title.slice(0, 12)}
-          </div>
-        ))}
-      </>}
-    </div>
-  )
-})}
+  <div 
+    key={j} 
+    // On déclenche l'ouverture de la fiche au clic
+    onClick={(e) => { 
+      e.stopPropagation(); // Empêche d'autres clics fantômes
+      onEdit(n); 
+    }} 
+    style={{
+      ...s.calDot, 
+      background: Q[n.importance].color,
+      cursor: 'pointer', // Pour montrer que c'est cliquable
+      transition: 'transform 0.1s'
+    }} 
+    title={n.title}
+  >
+    {n.title.slice(0, 12)}
+  </div>
+))}
       </div>
     </div>
   )
@@ -1214,7 +1224,7 @@ const getCatCount = (catId) => {
           </>
         )}
 
-        {tab === 'calendar' && <CalendarView notes={notes} />}
+       {tab === 'calendar' && <CalendarView notes={notes} onEdit={setModal} />}
         {tab === 'settings' && (
           <SettingsView 
             session={session} 
