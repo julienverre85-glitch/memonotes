@@ -4,10 +4,34 @@ import { supabase } from './lib/supabase'
 const VAPID_PUBLIC_KEY = 'BAurdkv0qAKxkuzAq448zYqL5BuOjxWjBkXANNBAh7nDGho7UUsFgfu9TUyc4zg_vsZ4ggW3PVvK6Z_ZiTsNmXs'
 
 const Q = {
-  1: { label: 'Urgent · Important',       color: '#dc2626', light: 'rgba(220,38,38,0.10)',  emoji: '🔴', desc: 'À Faire maintenant' },
-  2: { label: 'Important · Pas urgent',   color: '#2563eb', light: 'rgba(37,99,235,0.10)',  emoji: '🔵', desc: 'À Planifier'        },
-  3: { label: 'Urgent · Pas important',   color: '#d97706', light: 'rgba(217,119,6,0.10)',  emoji: '🟡', desc: 'À Déléguer'         },
-  4: { label: 'Ni urgent · Ni important', color: '#66bb6a', light: 'rgba(102,187,106,0.15)', emoji: '🟢', desc: 'À méditer' },
+  1: { 
+    label: 'Urgent · Important',       
+    color: '#ef9a9a', // Rouge corail très doux
+    light: 'rgba(239,154,154,0.15)', 
+    emoji: '🔴', 
+    desc: 'À Faire maintenant' 
+  },
+  2: { 
+    label: 'Important · Pas urgent',   
+    color: '#90caf9', // Bleu ciel poudré
+    light: 'rgba(144,202,249,0.15)', 
+    emoji: '🔵', 
+    desc: 'À Planifier'        
+  },
+  3: { 
+    label: 'Urgent · Pas important',   
+    color: '#ffcc80', // Orange crème / Pêche
+    light: 'rgba(255,204,128,0.15)', 
+    emoji: '🟡', 
+    desc: 'À Déléguer'        
+  },
+  4: { 
+    label: 'Ni urgent · Ni important', 
+    color: '#a5d6a7', // Vert menthe à l'eau
+    light: 'rgba(165,214,167,0.15)', 
+    emoji: '🟢', 
+    desc: 'À méditer'        
+  },
 }
 
 const CAT_PALETTE = ['#16a34a','#2563eb','#9333ea','#db2777','#ea580c','#0891b2','#65a30d','#854d0e','#475569','#b45309']
