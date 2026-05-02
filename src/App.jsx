@@ -925,20 +925,20 @@ const getCatCount = (catId) => {
     <div style={s.app}>
       <header style={s.header}>
         <h1 style={s.logo}>Mémo</h1>
-        <nav style={s.nav}>
+        
+      <nav style={s.nav}>
   {[
     ['notes', '📋 Tâches'],
     ['simple_notes', '📝 Notes'],
     ['calendar', '📅 Calendrier'],
-    ['settings', '⚙️']
+    ['settings', '⚙️ Paramètres'] // On peut remettre le mot ici aussi
   ].map(([id, label]) => (
     <button 
       key={id} 
-      style={{...s.navBtn,...(tab===id?s.navBtnActive:{})}} 
+      style={{...s.navBtn, ...(tab === id ? s.navBtnActive : {})}} 
       onClick={() => setTab(id)}
     >
-      {/* On n'affiche le texte que si l'écran est assez large */}
-      {window.innerWidth < 500 ? label.split(' ')[0] : label}
+      {label} {/* On affiche à nouveau tout le texte */}
     </button>
   ))}
 </nav>
@@ -1064,35 +1064,44 @@ const s = {
     alignItems: 'center',
     justifyContent: 'center',
     padding: '0 10px',
-    height: 56,
+    height: 60, // Un poil plus haut pour le confort
     position: 'relative'
   },
   logo: {
     fontFamily: 'var(--font-display)',
-    fontSize: 16, // Un poil plus petit pour laisser de la place
+    fontSize: 15, // On le réduit encore un peu pour laisser la place aux noms sur tel
     fontWeight: 700,
     color: '#c9a84c',
     letterSpacing: '-0.5px',
     fontStyle: 'italic',
     position: 'absolute',
-    left: 8, // On colle un peu plus au bord
+    left: 8,
     zIndex: 1
   },
   nav: {
     display: 'flex',
-    gap: 2 // Version compacte gardée
+    gap: 1 // Espace minimum pour que tout rentre sur une seule ligne
   },
   navBtn: {
     background: 'transparent',
     color: '#9a8f7a',
-    padding: '6px 6px', // Encore plus serré pour le mobile
+    padding: '6px 4px', // Padding très réduit sur les côtés pour le mobile
     borderRadius: 8,
-    fontSize: 11, // Un poil plus petit
+    fontSize: 14, // ON AGRANDIT ICI (était à 11 ou 12)
     border: 'none',
     cursor: 'pointer',
     fontFamily: 'inherit',
-    whiteSpace: 'nowrap'
+    whiteSpace: 'nowrap',
+    display: 'flex',
+    alignItems: 'center',
+    gap: 4
   },
+  navBtnActive: {
+    background: '#f0ece3',
+    color: '#1a1208',
+    fontWeight: '600'
+  },
+  
   navBtnActive:{background:'#f0ece3',color:'#1a1208'},
   main:         {flex:1,maxWidth:860,width:'100%',margin:'0 auto',padding:'20px 16px 40px'},
   toolbar:      {display:'flex',gap:10,marginBottom:12},
