@@ -683,56 +683,85 @@ function CatSettings({ categories, onChange }) {
 
 
 /* ──────────────────── CALENDAR ──────────────────── */
+/* ──────────────────── CALENDAR AVEC SELECTEURS ──────────────────── */
 function CalendarView({ notes }) {
   const today = new Date()
   const [year, setYear]   = useState(today.getFullYear())
   const [month, setMonth] = useState(today.getMonth())
-  const firstDay    = new Date(year,month,1).getDay()
-  const daysInMonth = new Date(year,month+1,0).getDate()
-  const offset      = (firstDay+6)%7
-  const notesByDay  = {}
-  notes.filter(n=>n.reminder_at).forEach(n => {
+  
+  // Générer une liste d'années (ex: 10 ans avant et 10 ans après aujourd'hui)
+  const years = Array.from({length: 31}, (_, i) => today.getFullYear() - 15 + i)
+
+  const prevMonth = () => { if(month===0){setMonth(11);setYear(y=>y-1)}else setMonth(m=>m-1) }
+  const nextMonth = () => { if(month===11){setMonth(0);setYear(y=>y+1)}else setMonth(m=>m+1) }
+
+  const daysInMonth = new Date(year, month + 1, 0).getDate()
+  const firstDay = new Date(year, month, 1).getDay()
+  const offset = (firstDay + 6) % 7
+
+  const notesByDay = {}
+  notes.filter(n => n.reminder_at).forEach(n => {
     const d = new Date(n.reminder_at)
-    if (d.getFullYear()===year && d.getMonth()===month) {
+    if (d.getFullYear() === year && d.getMonth() === month) {
       const day = d.getDate()
-      if (!notesByDay[day]) notesByDay[day]=[]
+      if (!notesByDay[day]) notesByDay[day] = []
       notesByDay[day].push(n)
     }
   })
-  const prevMonth = () => { if(month===0){setMonth(11);setYear(y=>y-1)}else setMonth(m=>m-1) }
-  const nextMonth = () => { if(month===11){setMonth(0);setYear(y=>y+1)}else setMonth(m=>m+1) }
-  const monthName = new Date(year,month).toLocaleDateString('fr-FR',{month:'long',year:'numeric'})
+
   const cells = []
-  for(let i=0;i<offset;i++) cells.push(null)
-  for(let d=1;d<=daysInMonth;d++) cells.push(d)
-  const isToday = d => d && d===today.getDate() && month===today.getMonth() && year===today.getFullYear()
+  for (let i = 0; i < offset; i++) cells.push(null)
+  for (let d = 1; d <= daysInMonth; d++) cells.push(d)
+
   return (
     <div style={s.calWrap}>
       <div style={s.calHeader}>
         <button style={s.iconBtn} onClick={prevMonth}>‹</button>
-        <span style={{fontFamily:'var(--font-display)',fontSize:20,fontWeight:600,textTransform:'capitalize',color:'#c9a84c'}}>{monthName}</span>
+        
+        {/* LA ZONE DE TITRE DEVIENT INTERACTIVE */}
+        <div style={{display:'flex', gap: 4, alignItems:'center'}}>
+          <select 
+            value={month} 
+            onChange={(e) => setMonth(parseInt(e.target.value))}
+            style={s.calHeaderSelect}
+          >
+            {MONTHS_FR.map((m, i) => (
+              <option key={i} value={i}>{m}</option>
+            ))}
+          </select>
+          
+          <select 
+            value={year} 
+            onChange={(e) => setYear(parseInt(e.target.value))}
+            style={s.calHeaderSelect}
+          >
+            {years.map(y => (
+              <option key={y} value={y}>{y}</option>
+            ))}
+          </select>
+        </div>
+
         <button style={s.iconBtn} onClick={nextMonth}>›</button>
       </div>
+      
       <div style={s.calGrid}>
         {['Lun','Mar','Mer','Jeu','Ven','Sam','Dim'].map(d => <div key={d} style={s.calDayHeader}>{d}</div>)}
-        {cells.map((d,i) => (
-          <div key={i} style={{...s.calCell, background:isToday(d)?'rgba(201,168,76,0.10)':d&&notesByDay[d]?'#fff':'transparent', border:isToday(d)?'1px solid #c9a84c':d&&notesByDay[d]?'1px solid #e5e0d5':'1px solid transparent'}}>
+        {cells.map((d, i) => (
+          <div key={i} style={{...s.calCell, border: d && today.getDate() === d && today.getMonth() === month && today.getFullYear() === year ? '1px solid #c9a84c' : '1px solid #e5e0d5', background: d && notesByDay[d] ? '#fff' : 'transparent'}}>
             {d && <>
-              <span style={{...s.calDayNum,color:isToday(d)?'#c9a84c':'#9a8f7a'}}>{d}</span>
-              {notesByDay[d] && notesByDay[d].map((n,j) => (
-                <div key={j} style={{...s.calDot,background:Q[n.importance].color}} title={n.title}>
-                  {n.title.slice(0,14)}{n.title.length>14?'…':''}
+              <span style={{fontSize: 11, fontWeight: 600, color: '#9a8f7a'}}>{d}</span>
+              {notesByDay[d] && notesByDay[d].map((n, j) => (
+                <div key={j} style={{...s.calDot, background: Q[n.importance].color}} title={n.title}>
+                  {n.title.slice(0, 12)}
                 </div>
               ))}
             </>}
           </div>
         ))}
       </div>
-      {Object.keys(notesByDay).length===0 && <p style={{textAlign:'center',color:'#9a8f7a',marginTop:24}}>Aucun rappel ce mois-ci</p>}
     </div>
   )
 }
-
 /* ──────────────────── SETTINGS ──────────────────── */
 function SettingsView({ session, categories, onCategoriesChange, collaborators, onCollaboratorsChange }) {
   const [pushStatus, setPushStatus] = useState('idle')
@@ -1257,5 +1286,20 @@ filterPanel: {
   authToggle:   {background:'transparent',color:'#9a8f7a',fontSize:13,marginTop:12,width:'100%',textDecoration:'underline',cursor:'pointer',border:'none',fontFamily:'inherit'},
   errorTxt:     {color:'#dc2626',fontSize:13,marginBottom:8},
   successTxt:   {color:'#16a34a',fontSize:13,marginBottom:8},
-  dateRow:      {display: 'flex', flexDirection: 'column', gap: 10, padding: '10px', background: '#f8f6f1', borderRadius: '8px', border: '1px solid #e5e0d5'}
+  dateRow:      {display: 'flex', flexDirection: 'column', gap: 10, padding: '10px', background: '#f8f6f1', borderRadius: '8px', border: '1px solid #e5e0d5'},
+  calHeaderSelect: {
+    fontFamily: 'serif',
+    fontSize: 20,
+    fontWeight: 700,
+    color: '#c9a84c',
+    background: 'transparent',
+    border: 'none',
+    cursor: 'pointer',
+    outline: 'none',
+    textAlign: 'center',
+    padding: '0 4px',
+    borderRadius: '4px',
+    appearance: 'none',
+    WebkitAppearance: 'none'
+  }
 };
