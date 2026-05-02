@@ -719,22 +719,61 @@ function CalendarView({ notes }) {
 
   return (
     <div style={s.calWrap}>
-      <div style={s.calHeader}>
-        <div style={{display:'flex', gap: 10, alignItems:'center'}}>
-          <button style={s.iconBtn} onClick={prevMonth}>‹</button>
-          {/* Bouton Aujourd'hui */}
-          <button onClick={goToToday} style={{...s.iconBtn, fontSize: 16, background: '#f0ece3', padding: '4px 8px', borderRadius: 8}} title="Aujourd'hui">📅</button>
-        </div>
+     <div style={s.calHeader}>
+        {/* Flèche Gauche */}
+        <button style={s.iconBtn} onClick={prevMonth}>‹</button>
         
-        <div style={{display:'flex', gap: 4, alignItems:'center'}}>
-          <select value={month} onChange={(e) => setMonth(parseInt(e.target.value))} style={s.calHeaderSelect}>
-            {MONTHS_FR.map((m, i) => (<option key={i} value={i}>{m}</option>))}
-          </select>
-          <select value={year} onChange={(e) => setYear(parseInt(e.target.value))} style={s.calHeaderSelect}>
-            {years.map(y => (<option key={y} value={y}>{y}</option>))}
-          </select>
+        {/* Groupe central : Mois + Année + Aujourd'hui */}
+        <div style={{display:'flex', gap: 15, alignItems:'center'}}>
+          
+          <div style={{display:'flex', gap: 8, alignItems:'center'}}>
+            {/* Sélecteur Mois avec indicateur visuel */}
+            <div style={s.selectWrapper}>
+              <select 
+                value={month} 
+                onChange={(e) => setMonth(parseInt(e.target.value))} 
+                style={s.calHeaderSelect}
+              >
+                {MONTHS_FR.map((m, i) => (<option key={i} value={i}>{m}</option>))}
+              </select>
+              <span style={s.selectChevron}>▼</span>
+            </div>
+
+            {/* Sélecteur Année avec indicateur visuel */}
+            <div style={s.selectWrapper}>
+              <select 
+                value={year} 
+                onChange={(e) => setYear(parseInt(e.target.value))} 
+                style={s.calHeaderSelect}
+              >
+                {years.map(y => (<option key={y} value={y}>{y}</option>))}
+              </select>
+              <span style={s.selectChevron}>▼</span>
+            </div>
+          </div>
+
+          {/* Bouton Aujourd'hui à droite de l'année */}
+          <button 
+            onClick={goToToday} 
+            style={{
+              ...s.iconBtn, 
+              fontSize: 18, 
+              background: '#fff', 
+              padding: '6px', 
+              borderRadius: '50%', 
+              boxShadow: '0 2px 5px rgba(0,0,0,0.05)',
+              border: '1px solid #e5e0d5',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }} 
+            title="Aujourd'hui"
+          >
+            📅
+          </button>
         </div>
 
+        {/* Flèche Droite */}
         <button style={s.iconBtn} onClick={nextMonth}>›</button>
       </div>
       
@@ -1294,17 +1333,32 @@ filterPanel: {
   dateRow:      {display: 'flex', flexDirection: 'column', gap: 10, padding: '10px', background: '#f8f6f1', borderRadius: '8px', border: '1px solid #e5e0d5'},
   calHeaderSelect: {
     fontFamily: 'serif',
-    fontSize: 20,
+    fontSize: 22, // Légèrement plus grand pour le style
     fontWeight: 700,
     color: '#c9a84c',
     background: 'transparent',
     border: 'none',
     cursor: 'pointer',
     outline: 'none',
-    textAlign: 'center',
-    padding: '0 4px',
-    borderRadius: '4px',
     appearance: 'none',
-    WebkitAppearance: 'none'
-  }
+    WebkitAppearance: 'none',
+    padding: '0 2px',
+  },
+  selectWrapper: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 2,
+    padding: '2px 6px',
+    borderRadius: 8,
+    transition: 'background 0.2s',
+    cursor: 'pointer',
+    // Petit effet au survol pour montrer que c'est cliquable
+    background: 'rgba(201, 168, 76, 0.05)', 
+  },
+  selectChevron: {
+    fontSize: 10,
+    color: '#c9a84c',
+    marginTop: 4,
+    opacity: 0.7
+  },
 };
