@@ -928,7 +928,7 @@ export default function App() {
     return true;
   })
   .filter(n => filterQ === 0 || n.importance === filterQ)
-  .filter(n => filterCats.length === 0 || filterCats.some(id => (n.cats || []).includes(id)))
+  .filter(n => filterCats.length === 0 || filterCats.every(id => (n.cats || []).includes(id)))
   .filter(n => !search || n.title.toLowerCase().includes(search.toLowerCase()) || (n.content || '').toLowerCase().includes(search.toLowerCase()))
   .filter(n => !filterAssignee || (n.assignees || []).includes(filterAssignee))
   // LE TRI INTELLIGENT
