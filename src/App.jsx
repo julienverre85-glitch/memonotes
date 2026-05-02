@@ -927,12 +927,19 @@ const getCatCount = (catId) => {
         <h1 style={s.logo}>Mémo</h1>
         <nav style={s.nav}>
   {[
-    ['notes', '📋 Tâches'],        // L'ancien "Notes" devient "Tâches"
-    ['simple_notes', '📝 Notes'], // Le nouveau coin pour les notes simples
-    ['calendar', '📅 Calendrier'], 
+    ['notes', '📋 Tâches'],
+    ['simple_notes', '📝 Notes'],
+    ['calendar', '📅 Calendrier'],
     ['settings', '⚙️']
   ].map(([id, label]) => (
-    <button key={id} style={{...s.navBtn,...(tab===id?s.navBtnActive:{})}} onClick={() => setTab(id)}>{label}</button>
+    <button 
+      key={id} 
+      style={{...s.navBtn,...(tab===id?s.navBtnActive:{})}} 
+      onClick={() => setTab(id)}
+    >
+      {/* On n'affiche le texte que si l'écran est assez large */}
+      {window.innerWidth < 500 ? label.split(' ')[0] : label}
+    </button>
   ))}
 </nav>
       </header>
@@ -1056,89 +1063,86 @@ const s = {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    padding: '0 10px', // Un peu moins de padding sur les côtés
+    padding: '0 10px',
     height: 56,
     position: 'relative'
   },
   logo: {
     fontFamily: 'var(--font-display)',
-    fontSize: 18, // On réduit de 22 à 18 pour gagner de la place sur tel
+    fontSize: 16, // Un poil plus petit pour laisser de la place
     fontWeight: 700,
     color: '#c9a84c',
     letterSpacing: '-0.5px',
     fontStyle: 'italic',
     position: 'absolute',
-    left: 10, // Collé un peu plus à gauche
-    zIndex: 1 // S'assure qu'il ne passe pas dessous
+    left: 8, // On colle un peu plus au bord
+    zIndex: 1
   },
   nav: {
     display: 'flex',
-    gap: 2 // On réduit l'espace entre les boutons (de 4 à 2)
+    gap: 2 // Version compacte gardée
   },
   navBtn: {
     background: 'transparent',
     color: '#9a8f7a',
-    padding: '6px 8px', // On réduit le padding latéral (de 12 à 8)
+    padding: '6px 6px', // Encore plus serré pour le mobile
     borderRadius: 8,
-    fontSize: 12, // On réduit un poil la police (de 13 à 12)
+    fontSize: 11, // Un poil plus petit
     border: 'none',
     cursor: 'pointer',
     fontFamily: 'inherit',
     whiteSpace: 'nowrap'
   },
-  
-  nav:         {display:'flex',gap:4},
-  navBtn:      {background:'transparent',color:'#9a8f7a',padding:'6px 12px',borderRadius:8,fontSize:13,border:'none',cursor:'pointer',fontFamily:'inherit'},
   navBtnActive:{background:'#f0ece3',color:'#1a1208'},
-  main:        {flex:1,maxWidth:860,width:'100%',margin:'0 auto',padding:'20px 16px 40px'},
-  toolbar:     {display:'flex',gap:10,marginBottom:12},
+  main:         {flex:1,maxWidth:860,width:'100%',margin:'0 auto',padding:'20px 16px 40px'},
+  toolbar:      {display:'flex',gap:10,marginBottom:12},
   filterLabel: {fontSize:10,fontWeight:600,color:'#9a8f7a',textTransform:'uppercase',letterSpacing:'0.5px',marginRight:2,flexShrink:0},
-  filterBtn:   {background:'#fff',border:'1px solid #e5e0d5',color:'#9a8f7a',padding:'3px 12px',borderRadius:20,fontSize:12,cursor:'pointer',fontFamily:'inherit'},
-  noteGrid:    {display:'grid',gridTemplateColumns:'repeat(auto-fill, minmax(280px, 1fr))',gap:16},
-  empty:       {textAlign:'center',marginTop:60},
-  card:        {borderRadius:12,overflow:'hidden',border:'1px solid #e5e0d5',background:'#fff', display: 'flex', flexDirection: 'column'},
-  cardBanner:  {display:'flex',alignItems:'center',gap:8,padding:'8px 14px'},
+  filterBtn:    {background:'#fff',border:'1px solid #e5e0d5',color:'#9a8f7a',padding:'3px 12px',borderRadius:20,fontSize:12,cursor:'pointer',fontFamily:'inherit'},
+  noteGrid:     {display:'grid',gridTemplateColumns:'repeat(auto-fill, minmax(280px, 1fr))',gap:16},
+  empty:        {textAlign:'center',marginTop:60},
+  card:         {borderRadius:12,overflow:'hidden',border:'1px solid #e5e0d5',background:'#fff', display: 'flex', flexDirection: 'column'},
+  cardBanner:   {display:'flex',alignItems:'center',gap:8,padding:'8px 14px'},
   bannerEmoji: {fontSize:13},
   bannerLabel: {fontSize:11,fontWeight:600,color:'rgba(255,255,255,0.95)',flex:1},
-  bannerDesc:  {fontSize:9,color:'rgba(255,255,255,0.75)',background:'rgba(0,0,0,0.2)',padding:'2px 6px',borderRadius:10},
-  cardBody:    {padding:'13px 15px 11px', flex: 1},
-  cardTitle:   {fontFamily:'var(--font-display)',fontSize:15,fontWeight:600,color:'#1a1208',marginBottom:5},
+  bannerDesc:   {fontSize:9,color:'rgba(255,255,255,0.75)',background:'rgba(0,0,0,0.2)',padding:'2px 6px',borderRadius:10},
+  cardBody:     {padding:'13px 15px 11px', flex: 1},
+  cardTitle:    {fontFamily:'var(--font-display)',fontSize:15,fontWeight:600,color:'#1a1208',marginBottom:5},
   cardContent: {fontSize:12,color:'#7a6f5e',lineHeight:1.5,marginBottom:8,display:'-webkit-box',WebkitLineClamp:3,WebkitBoxOrient:'vertical',overflow:'hidden'},
-  cardFooter:  {display:'flex',alignItems:'center',justifyContent:'space-between',gap:8},
+  cardFooter:   {display:'flex',alignItems:'center',justifyContent:'space-between',gap:8},
   reminderBadge:{fontSize:10,fontWeight:500},
   cardActions: {display:'flex',gap:4},
-  overlay:     {position:'fixed',inset:0,background:'rgba(0,0,0,0.35)',backdropFilter:'blur(4px)',zIndex:50,display:'flex',alignItems:'center',justifyContent:'center',padding:16},
-  modal:       {background:'#fff',border:'1px solid #e5e0d5',borderRadius:16,width:'100%',maxWidth:520,maxHeight:'90vh',overflow:'hidden',display:'flex',flexDirection:'column',boxShadow:'0 20px 60px rgba(0,0,0,0.15)'},
-  modalBody:   { flex: 1, overflowY: 'auto', padding: '18px 18px 250px', display: 'flex', flexDirection: 'column', gap: 12 },
+  overlay:      {position:'fixed',inset:0,background:'rgba(0,0,0,0.35)',backdropFilter:'blur(4px)',zIndex:50,display:'flex',alignItems:'center',justifyContent:'center',padding:16},
+  modal:        {background:'#fff',border:'1px solid #e5e0d5',borderRadius:16,width:'100%',maxWidth:520,maxHeight:'90vh',overflow:'hidden',display:'flex',flexDirection:'column',boxShadow:'0 20px 60px rgba(0,0,0,0.15)'},
+  modalBody:    { flex: 1, overflowY: 'auto', padding: '18px 18px 250px', display: 'flex', flexDirection: 'column', gap: 12 },
   modalFooter: {display:'flex',justifyContent:'flex-end',gap:10,padding:18,borderTop:'1px solid #f0ece3'},
-  label:       {fontSize:11,fontWeight:600,color:'#9a8f7a',letterSpacing:'0.5px',textTransform:'uppercase'},
-  input:       {background:'#f8f6f1',border:'1px solid #e5e0d5',borderRadius:8,color:'#1a1208',padding:'9px 12px',fontSize:14,width:'100%',fontFamily:'inherit'},
-  textarea:    {resize:'vertical',minHeight:90},
-  quadGrid:    {display:'grid',gridTemplateColumns:'1fr 1fr',gap:8},
-  quadBtn:     {background:'#f8f6f1',border:'2px solid',borderRadius:10,padding:'10px 8px',cursor:'pointer',display:'flex',flexDirection:'column',alignItems:'center',gap:4,textAlign:'center',fontFamily:'inherit'},
-  notifRow:    {display:'flex',gap:20},
-  checkLabel:  {display:'flex',alignItems:'center',gap:6,fontSize:13,color:'#9a8f7a',cursor:'pointer'},
-  btn:         {background:'#c9a84c',color:'#13100a',fontWeight:700,fontSize:13,padding:'8px 18px',borderRadius:8,border:'none',cursor:'pointer',fontFamily:'inherit'},
-  btnGhost:    {background:'transparent',border:'1px solid #e5e0d5',color:'#9a8f7a',fontSize:13,padding:'8px 18px',borderRadius:8,cursor:'pointer',fontFamily:'inherit'},
-  iconBtn:     {background:'transparent',color:'#9a8f7a',fontSize:18,padding:'2px 6px',borderRadius:6,cursor:'pointer',border:'none',fontFamily:'inherit'},
-  calWrap:     {animation:'fadeIn 0.3s ease'},
-  calHeader:   {display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:20,padding:'0 4px'},
-  calGrid:     {display:'grid',gridTemplateColumns:'repeat(7, 1fr)',gap:4},
+  label:        {fontSize:11,fontWeight:600,color:'#9a8f7a',letterSpacing:'0.5px',textTransform:'uppercase'},
+  input:        {background:'#f8f6f1',border:'1px solid #e5e0d5',borderRadius:8,color:'#1a1208',padding:'9px 12px',fontSize:14,width:'100%',fontFamily:'inherit'},
+  textarea:     {resize:'vertical',minHeight:90},
+  quadGrid:     {display:'grid',gridTemplateColumns:'1fr 1fr',gap:8},
+  quadBtn:      {background:'#f8f6f1',border:'2px solid',borderRadius:10,padding:'10px 8px',cursor:'pointer',display:'flex',flexDirection:'column',alignItems:'center',gap:4,textAlign:'center',fontFamily:'inherit'},
+  notifRow:     {display:'flex',gap:20},
+  checkLabel:   {display:'flex',alignItems:'center',gap:6,fontSize:13,color:'#9a8f7a',cursor:'pointer'},
+  btn:          {background:'#c9a84c',color:'#13100a',fontWeight:700,fontSize:13,padding:'8px 18px',borderRadius:8,border:'none',cursor:'pointer',fontFamily:'inherit'},
+  btnGhost:     {background:'transparent',border:'1px solid #e5e0d5',color:'#9a8f7a',fontSize:13,padding:'8px 18px',borderRadius:8,cursor:'pointer',fontFamily:'inherit'},
+  iconBtn:      {background:'transparent',color:'#9a8f7a',fontSize:18,padding:'2px 6px',borderRadius:6,cursor:'pointer',border:'none',fontFamily:'inherit'},
+  calWrap:      {animation:'fadeIn 0.3s ease'},
+  calHeader:    {display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:20,padding:'0 4px'},
+  calGrid:      {display:'grid',gridTemplateColumns:'repeat(7, 1fr)',gap:4},
   calDayHeader:{textAlign:'center',fontSize:10,fontWeight:600,color:'#9a8f7a',padding:'4px 0',textTransform:'uppercase'},
-  calCell:     {minHeight:72,borderRadius:8,padding:6,display:'flex',flexDirection:'column',gap:3},
-  calDayNum:   {fontSize:11,fontWeight:500,marginBottom:2},
-  calDot:      {fontSize:9,color:'#fff',borderRadius:4,padding:'2px 4px',overflow:'hidden',whiteSpace:'nowrap',lineHeight:1.4},
+  calCell:      {minHeight:72,borderRadius:8,padding:6,display:'flex',flexDirection:'column',gap:3},
+  calDayNum:    {fontSize:11,fontWeight:500,marginBottom:2},
+  calDot:       {fontSize:9,color:'#fff',borderRadius:4,padding:'2px 4px',overflow:'hidden',whiteSpace:'nowrap',lineHeight:1.4},
   settingsWrap:{maxWidth:500,animation:'fadeIn 0.3s ease'},
   sectionTitle:{fontFamily:'var(--font-display)',fontSize:24,fontWeight:700,marginBottom:20,color:'#c9a84c',fontStyle:'italic'},
   settingsCard:{background:'#fff',border:'1px solid #e5e0d5',borderRadius:12,padding:'18px 20px',marginBottom:12},
   settingsCardTitle:{fontSize:15,fontWeight:600,marginBottom:12,color:'#1a1208'},
-  authWrap:    {minHeight:'100vh',display:'flex',alignItems:'center',justifyContent:'center',padding:20,background:'#f8f6f1'},
-  authCard:    {background:'#fff',border:'1px solid #e5e0d5',borderRadius:20,padding:'36px 32px',width:'100%',maxWidth:380,boxShadow:'0 8px 32px rgba(0,0,0,0.08)'},
-  authTitle:   {fontFamily:'var(--font-display)',fontSize:36,fontWeight:700,color:'#c9a84c',textAlign:'center',marginBottom:4,fontStyle:'italic'},
-  authSub:     {textAlign:'center',color:'#9a8f7a',marginBottom:28,fontSize:14},
-  authFields:  {display:'flex',flexDirection:'column',gap:12,marginBottom:16},
-  authToggle:  {background:'transparent',color:'#9a8f7a',fontSize:13,marginTop:12,width:'100%',textDecoration:'underline',cursor:'pointer',border:'none',fontFamily:'inherit'},
-  errorTxt:    {color:'#dc2626',fontSize:13,marginBottom:8},
-  successTxt:  {color:'#16a34a',fontSize:13,marginBottom:8},
-  dateRow:     {display: 'flex', flexDirection: 'column', gap: 10, padding: '10px', background: '#f8f6f1', borderRadius: '8px', border: '1px solid #e5e0d5'}
+  authWrap:     {minHeight:'100vh',display:'flex',alignItems:'center',justifyContent:'center',padding:20,background:'#f8f6f1'},
+  authCard:     {background:'#fff',border:'1px solid #e5e0d5',borderRadius:20,padding:'36px 32px',width:'100%',maxWidth:380,boxShadow:'0 8px 32px rgba(0,0,0,0.08)'},
+  authTitle:    {fontFamily:'var(--font-display)',fontSize:36,fontWeight:700,color:'#c9a84c',textAlign:'center',marginBottom:4,fontStyle:'italic'},
+  authSub:      {textAlign:'center',color:'#9a8f7a',marginBottom:28,fontSize:14},
+  authFields:   {display:'flex',flexDirection:'column',gap:12,marginBottom:16},
+  authToggle:   {background:'transparent',color:'#9a8f7a',fontSize:13,marginTop:12,width:'100%',textDecoration:'underline',cursor:'pointer',border:'none',fontFamily:'inherit'},
+  errorTxt:     {color:'#dc2626',fontSize:13,marginBottom:8},
+  successTxt:   {color:'#16a34a',fontSize:13,marginBottom:8},
+  dateRow:      {display: 'flex', flexDirection: 'column', gap: 10, padding: '10px', background: '#f8f6f1', borderRadius: '8px', border: '1px solid #e5e0d5'}
 };
