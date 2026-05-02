@@ -1073,7 +1073,7 @@ app: {
   overlay:     {position:'fixed',inset:0,background:'rgba(0,0,0,0.35)',backdropFilter:'blur(4px)',zIndex:50,display:'flex',alignItems:'center',justifyContent:'center',padding:16},
   modal:       {background:'#fff',border:'1px solid #e5e0d5',borderRadius:16,width:'100%',maxWidth:520,maxHeight:'90vh',overflow:'hidden',display:'flex',flexDirection:'column',boxShadow:'0 20px 60px rgba(0,0,0,0.15)'},
   modalHeader: {display:'flex',alignItems:'center',justifyContent:'space-between',padding:'14px 18px'},
-  modalBody: { flex: 1, overflowY: 'auto', padding: '18px 18px 100px', display: 'flex', flexDirection: 'column', gap: 12 },
+  modalBody: { flex: 1, overflowY: 'auto', padding: '18px 18px 50px', display: 'flex', flexDirection: 'column', gap: 12 },
   modalFooter: {display:'flex',justifyContent:'flex-end',gap:10,padding:18,borderTop:'1px solid #f0ece3'},
   label:       {fontSize:11,fontWeight:600,color:'#9a8f7a',letterSpacing:'0.5px',textTransform:'uppercase'},
   input:       {background:'#f8f6f1',border:'1px solid #e5e0d5',borderRadius:8,color:'#1a1208',padding:'9px 12px',fontSize:14,width:'100%',fontFamily:'inherit'},
