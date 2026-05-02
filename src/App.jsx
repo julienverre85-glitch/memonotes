@@ -1037,8 +1037,8 @@ app: {
   flexDirection: 'column',
   minHeight: '100vh',
   background: '#f8f6f1',
-  touch-action: 'manipulation', // Empêche les zooms accidentels lors des doubles-taps
-  overflow: 'hidden' // Optionnel : empêche le scroll de toute la page si ta modal gère son propre scroll
+  touchAction: 'manipulation', // <-- C'est "touchAction" sans tiret !
+  overflow: 'hidden' 
 },
   filterPanel: {background: '#f0f4f8',padding: '4px 12px',borderRadius: '16px',marginBottom: '20px',border: '1px solid #e1e8f0',display: 'inline-flex',flexDirection: 'column',gap: 12},
   header:      {position:'sticky',top:0,zIndex:10,background:'#fff',borderBottom:'1px solid #e5e0d5',display:'flex',alignItems:'center',justifyContent:'space-between',padding:'0 20px',height:56,gap:16},
