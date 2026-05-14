@@ -1080,11 +1080,9 @@ export default function App() {
   const filtered = notes
   .filter(n => {
     if (tab === 'notes') {
-  return n.type === 'task' && (
-    showDone 
-      ? n.status === 'done' 
-      : n.status !== 'done' && n.status !== 'waiting'
-  );
+  if (showDone) return n.type === 'task' && n.status === 'done'
+  if (showWaiting) return n.type === 'task' && n.status === 'waiting'
+  return n.type === 'task' && n.status !== 'done' && n.status !== 'waiting'
 }
     if (tab === 'simple_notes') return n.type === 'note';
     return true;
