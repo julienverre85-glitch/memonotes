@@ -1173,7 +1173,8 @@ const getCatCount = (catId) => {
     ⏸️ En attente
   </button>
 </div>
-              )}
+  </div>
+)}
 
              {/* DEBUT DU BLOC CATEGORIES RETRACTABLE */}
 <div style={{display: 'flex', flexDirection: 'column', gap: 8, borderTop: '1px solid #e1e8f0', paddingTop: 8, marginBottom: 10}}>
