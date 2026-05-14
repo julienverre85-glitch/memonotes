@@ -1161,17 +1161,17 @@ const getCatCount = (catId) => {
                   </div>
                   <div style={{display: 'flex', gap: 6}}>
   <button 
-    onClick={() => { setShowDone(!showDone); setShowWaiting(false) }}
-    style={{...s.btnGhost, padding: '4px 12px', fontSize: 11, borderColor: showDone ? '#c9a84c' : '#e5e0d5', color: showDone ? '#c9a84c' : '#9a8f7a'}}
-  >
-    ✅ Terminées
-  </button>
-  <button 
-    onClick={() => { setShowWaiting(!showWaiting); setShowDone(false) }}
-    style={{...s.btnGhost, padding: '4px 12px', fontSize: 11, borderColor: showWaiting ? '#9333ea' : '#e5e0d5', color: showWaiting ? '#9333ea' : '#9a8f7a'}}
-  >
-    ⏸️ En attente
-  </button>
+  onClick={() => { setShowDone(!showDone); setShowWaiting(false) }}
+  style={{...s.btnGhost, padding: '4px 12px', fontSize: 11, borderColor: showDone ? '#c9a84c' : '#e5e0d5', color: showDone ? '#c9a84c' : '#9a8f7a'}}
+>
+  {showDone ? '← Retour Tâches' : '✅ Terminées'}
+</button>
+<button 
+  onClick={() => { setShowWaiting(!showWaiting); setShowDone(false) }}
+  style={{...s.btnGhost, padding: '4px 12px', fontSize: 11, borderColor: showWaiting ? '#9333ea' : '#e5e0d5', color: showWaiting ? '#9333ea' : '#9a8f7a'}}
+>
+  {showWaiting ? '← Retour Tâches' : '⏸️ En attente'}
+</button>
 </div>
   </div>
 )}
