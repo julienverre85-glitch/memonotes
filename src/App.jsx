@@ -45,7 +45,6 @@ function urlBase64ToUint8Array(base64String) {
   return new Uint8Array([...rawData].map(c => c.charCodeAt(0)))
 }
 
-/* ──────────────────── DATE TIME PICKER ──────────────────── */
 /* ──────────────────── DATE TIME PICKER (Version avec Scroll Auto) ──────────────────── */
 function DateTimePicker({ value, onChange }) {
   const [openPart, setOpenPart] = useState(null)
@@ -128,14 +127,28 @@ function DateTimePicker({ value, onChange }) {
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 2 }}>
               {DAYS_FR.map(d => <div key={d} style={{ textAlign: 'center', fontSize: 10, fontWeight: 700, color: '#9a8f7a' }}>{d}</div>)}
-              {cells.map((d, i) => (
-                <div key={i} onClick={() => { if(d){ setDay(d); updateGlobal(d, hour, minute); setOpenPart(null); } }} 
-                  style={{
-                    textAlign: 'center', fontSize: 12, padding: '6px 0', borderRadius: 6, cursor: d ? 'pointer' : 'default',
-                    background: day === d && parsed ? '#c9a84c' : 'transparent',
-                    color: day === d && parsed ? '#fff' : d ? '#1a1208' : 'transparent',
-                  }}>{d || ''}</div>
-              ))}
+             {cells.map((d, i) => {
+  const isSelected = day === d && parsed
+  const isToday = d === today.getDate() && month === today.getMonth() && year === today.getFullYear()
+  return (
+    <div key={i} onClick={() => { if(d){ setDay(d); updateGlobal(d, hour, minute); setOpenPart(null); } }} 
+      style={{
+        textAlign: 'center', fontSize: 12, padding: '6px 0', borderRadius: 6, cursor: d ? 'pointer' : 'default',
+        background: isSelected ? '#c9a84c' : 'transparent',
+        color: isSelected ? '#fff' : d ? '#1a1208' : 'transparent',
+        fontWeight: isToday ? 800 : 400,
+        position: 'relative'
+      }}>
+      {d || ''}
+      {d && isToday && !isSelected && (
+        <span style={{
+          position: 'absolute', bottom: 1, left: '50%', transform: 'translateX(-50%)',
+          width: 4, height: 4, borderRadius: '50%', background: '#c9a84c', display: 'block'
+        }} />
+      )}
+    </div>
+  )
+})}
             </div>
           </div>
         )}
