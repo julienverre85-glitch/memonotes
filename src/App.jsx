@@ -473,6 +473,24 @@ function NoteModal({ note, categories, collaborators, onSave, onClose, onNewCate
   const [assignees, setAssignees] = useState(note?.assignees || [])
 
   const [localType, setLocalType] = useState(note?.type || (currentTab === 'simple_notes' ? 'note' : 'task'));
+
+  // Verrouillage du scroll iOS quand la modal est ouverte
+useEffect(() => {
+  const scrollY = window.scrollY
+  document.body.style.position = 'fixed'
+  document.body.style.top = `-${scrollY}px`
+  document.body.style.width = '100%'
+  document.body.style.overflow = 'hidden'
+  
+  return () => {
+    document.body.style.position = ''
+    document.body.style.top = ''
+    document.body.style.width = ''
+    document.body.style.overflow = ''
+    window.scrollTo(0, scrollY)
+  }
+}, [])
+  
   const isSimpleNote = localType === 'note';
   const headerColor = isSimpleNote ? '#c9a84c' : Q[importance].color;
 
@@ -500,7 +518,9 @@ function NoteModal({ note, categories, collaborators, onSave, onClose, onNewCate
 
   return (
     <div style={s.overlay} onClick={e => e.target===e.currentTarget && onClose()}>
-      <div style={{...s.modal, animation:'slideUp 0.25s ease'}}>
+      <div style={{...s.modal, animation:'slideUp 0.25s ease'}}
+        onTouchEnd={e => e.stopPropagation()}  // ← AJOUT
+  >
         
         <div style={{...s.modalHeader, background: headerColor}}>
           <div style={{display:'flex', gap: 10, alignItems: 'center'}}>
@@ -579,9 +599,13 @@ function NoteModal({ note, categories, collaborators, onSave, onClose, onNewCate
         </div>
 
         <div style={s.modalFooter}>
-          <button style={s.btnGhost} onClick={onClose}>Annuler</button>
-          <button style={{...s.btn, opacity:saving?0.6:1, background: headerColor, color:'#fff'}} onClick={save} disabled={saving}>
-            {saving ? '…' : 'Enregistrer'}
+  <button style={s.btnGhost} onPointerDown={onClose}>Annuler</button>
+  <button 
+    style={{...s.btn, opacity:saving?0.6:1, background: headerColor, color:'#fff'}} 
+    onPointerDown={save} 
+    disabled={saving}
+  >
+    {saving ? '…' : 'Enregistrer'}
           </button>
         </div>
       </div>
@@ -589,7 +613,6 @@ function NoteModal({ note, categories, collaborators, onSave, onClose, onNewCate
   )
 } 
 
-/* ──────────────────── CAT SETTINGS ──────────────────── */
 /* ──────────────────── CAT SETTINGS (Version avec changement de couleur) ──────────────────── */
 function CatSettings({ categories, onChange }) {
   const [newName, setNewName]   = useState('')
@@ -1295,12 +1318,11 @@ logo: {
   position: 'fixed',
   inset: 0,
   background: 'rgba(0,0,0,0.35)',
-  backdropFilter: 'blur(4px)',
   zIndex: 50,
-  overflowY: 'auto',                    // ← AJOUT
-  WebkitOverflowScrolling: 'touch',     // ← AJOUT
+  overflowY: 'auto',                    
+  WebkitOverflowScrolling: 'touch',     
   display: 'flex',
-  alignItems: 'center',
+  alignItems: 'flex-end',
   justifyContent: 'center',
   padding: 16
 },
