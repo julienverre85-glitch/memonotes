@@ -1159,19 +1159,20 @@ const getCatCount = (catId) => {
                       </button>
                     ))}
                   </div>
-                  <button 
-                    onClick={() => setShowDone(!showDone)}
-                    style={{...s.btnGhost, padding: '4px 12px', fontSize: 11, borderColor: showDone ? '#c9a84c' : '#e5e0d5', color: showDone ? '#c9a84c' : '#9a8f7a', display: 'flex', alignItems: 'center', gap: 5}}
-                  >
-                    {showDone ? '📂 Actives' : '✅ Terminées'}
-                  </button>
-                  <button 
+                  <div style={{display: 'flex', gap: 6}}>
+  <button 
+    onClick={() => { setShowDone(!showDone); setShowWaiting(false) }}
+    style={{...s.btnGhost, padding: '4px 12px', fontSize: 11, borderColor: showDone ? '#c9a84c' : '#e5e0d5', color: showDone ? '#c9a84c' : '#9a8f7a'}}
+  >
+    ✅ Terminées
+  </button>
+  <button 
     onClick={() => { setShowWaiting(!showWaiting); setShowDone(false) }}
     style={{...s.btnGhost, padding: '4px 12px', fontSize: 11, borderColor: showWaiting ? '#9333ea' : '#e5e0d5', color: showWaiting ? '#9333ea' : '#9a8f7a'}}
   >
     ⏸️ En attente
   </button>
-                </div>
+</div>
               )}
 
              {/* DEBUT DU BLOC CATEGORIES RETRACTABLE */}
@@ -1249,15 +1250,15 @@ const getCatCount = (catId) => {
            ) : (
   <>
     {showDone && (
-      <h2 style={{fontFamily:'serif', fontStyle:'italic', color:'#9a8f7a', fontSize:20, marginBottom:8}}>
-        ✅ Tâches terminées
-      </h2>
-    )}
-    {showWaiting && (
-      <h2 style={{fontFamily:'serif', fontStyle:'italic', color:'#9a8f7a', fontSize:20, marginBottom:8}}>
-        ⏸️ Tâches en attente
-      </h2>
-    )}
+  <h2 style={{fontFamily:'serif', fontStyle:'italic', color:'#9a8f7a', fontSize:20, marginBottom:8, textAlign:'center'}}>
+    ✅ Tâches terminées
+  </h2>
+)}
+{showWaiting && (
+  <h2 style={{fontFamily:'serif', fontStyle:'italic', color:'#9a8f7a', fontSize:20, marginBottom:8, textAlign:'center'}}>
+    ⏸️ Tâches en attente
+  </h2>
+)}
     <div style={s.noteGrid}>
       {filtered.map(n => (
         <NoteCard key={n.id} note={n} categories={categories} onEdit={setModal} onDelete={deleteNote} />
