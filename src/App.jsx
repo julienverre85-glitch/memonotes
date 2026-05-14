@@ -1239,7 +1239,7 @@ const getCatCount = (catId) => {
                   <button key={name} onClick={() => setFilterAssignee(filterAssignee === name ? null : name)} style={{...s.filterBtn, ...(filterAssignee === name ? {background: '#c9a84c', color: '#fff', borderColor: '#c9a84c'} : {})}}>👤 {name}</button>
                 ))}
               </div>
-            </div> {/* FIN DU filterPanel */}
+            </div>
 
             {/* AFFICHAGE DES FICHES */}
             {filtered.length === 0 ? (
