@@ -1246,24 +1246,25 @@ const getCatCount = (catId) => {
                 <p style={{fontSize: 40}}>📝</p>
                 <p style={{color: '#9a8f7a', marginTop: 8}}>Rien ici pour le moment.</p>
               </div>
-            ) : (
-{showDone && (
-  <h2 style={{fontFamily:'serif', fontStyle:'italic', color:'#c9a84c', fontSize:20, marginBottom:8}}>
-    ✅ Tâches terminées
-  </h2>
+           ) : (
+  <>
+    {showDone && (
+      <h2 style={{fontFamily:'serif', fontStyle:'italic', color:'#9a8f7a', fontSize:20, marginBottom:8}}>
+        ✅ Tâches terminées
+      </h2>
+    )}
+    {showWaiting && (
+      <h2 style={{fontFamily:'serif', fontStyle:'italic', color:'#9a8f7a', fontSize:20, marginBottom:8}}>
+        ⏸️ Tâches en attente
+      </h2>
+    )}
+    <div style={s.noteGrid}>
+      {filtered.map(n => (
+        <NoteCard key={n.id} note={n} categories={categories} onEdit={setModal} onDelete={deleteNote} />
+      ))}
+    </div>
+  </>
 )}
-{showWaiting && (
-  <h2 style={{fontFamily:'serif', fontStyle:'italic', color:'#c9a84c', fontSize:20, marginBottom:8}}>
-    ⏸️ Tâches en attente
-  </h2>
-)}
-            
-              <div style={s.noteGrid}>
-                {filtered.map(n => (
-                  <NoteCard key={n.id} note={n} categories={categories} onEdit={setModal} onDelete={deleteNote} />
-                ))}
-              </div>
-            )}
           </>
         )}
 
