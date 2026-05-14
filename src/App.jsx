@@ -948,6 +948,32 @@ export default function App() {
     setNotes(data||[])
   }, [session])
 
+  const rolloverOverdueTasks = useCallback(async () => {
+  if (!session) return
+
+  const now = new Date()
+  const overdue = notes.filter(n => 
+    n.type === 'task' && 
+    n.status !== 'done' && 
+    n.reminder_at && 
+    new Date(n.reminder_at) < now
+  )
+
+  if (overdue.length === 0) return
+
+  const tomorrow = new Date(now)
+  tomorrow.setDate(tomorrow.getDate() + 1)
+  tomorrow.setHours(7, 0, 0, 0) // Reporté à 9h le lendemain
+
+  await Promise.all(overdue.map(n =>
+    supabase.from('notes')
+      .update({ reminder_at: tomorrow.toISOString() })
+      .eq('id', n.id)
+  ))
+
+  await fetchNotes()
+}, [session, notes, fetchNotes])
+
  const fetchSettings = useCallback(async () => {
   if (!session) return
   const { data } = await supabase.from('user_settings').select('*').eq('user_id', session.user.id).single()
@@ -958,7 +984,10 @@ export default function App() {
   if (data?.collaborators) setCollaborators([...data.collaborators].sort()) 
 }, [session])
 
-  useEffect(() => { fetchNotes(); fetchSettings() }, [fetchNotes, fetchSettings])
+  useEffect(() => { 
+  fetchNotes().then(() => rolloverOverdueTasks())
+  fetchSettings() 
+}, [fetchNotes, fetchSettings, rolloverOverdueTasks])
 
   const saveCategories = async (newCats) => {
   // On trie par nom avant de sauvegarder
