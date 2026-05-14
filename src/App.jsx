@@ -1242,23 +1242,23 @@ const getCatCount = (catId) => {
             </div>
 
             {/* AFFICHAGE DES FICHES */}
-            {filtered.length === 0 ? (
-              <div style={s.empty}>
-                <p style={{fontSize: 40}}>📝</p>
-                <p style={{color: '#9a8f7a', marginTop: 8}}>Rien ici pour le moment.</p>
-              </div>
-           ) : (
+{filtered.length === 0 ? (
+  <div style={s.empty}>
+    <p style={{fontSize: 40}}>📝</p>
+    <p style={{color: '#9a8f7a', marginTop: 8}}>Rien ici pour le moment.</p>
+  </div>
+) : (
   <>
     {showDone && (
-  <h2 style={{fontFamily:'serif', fontStyle:'italic', color:'#9a8f7a', fontSize:20, marginBottom:8, textAlign:'center'}}>
-    ✅ Tâches terminées
-  </h2>
-)}
-{showWaiting && (
-  <h2 style={{fontFamily:'serif', fontStyle:'italic', color:'#9a8f7a', fontSize:20, marginBottom:8, textAlign:'center'}}>
-    ⏸️ Tâches en attente
-  </h2>
-)}
+      <h2 style={{fontFamily:'serif', fontStyle:'italic', color:'#9a8f7a', fontSize:20, marginBottom:8, textAlign:'center'}}>
+        ✅ Tâches terminées
+      </h2>
+    )}
+    {showWaiting && (
+      <h2 style={{fontFamily:'serif', fontStyle:'italic', color:'#9a8f7a', fontSize:20, marginBottom:8, textAlign:'center'}}>
+        ⏸️ Tâches en attente
+      </h2>
+    )}
     <div style={s.noteGrid}>
       {filtered.map(n => (
         <NoteCard key={n.id} note={n} categories={categories} onEdit={setModal} onDelete={deleteNote} />
@@ -1266,8 +1266,6 @@ const getCatCount = (catId) => {
     </div>
   </>
 )}
-          </>
-        )}
 
        {tab === 'calendar' && <CalendarView notes={notes} onEdit={setModal} />}
         {tab === 'settings' && (
