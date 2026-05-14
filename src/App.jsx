@@ -949,6 +949,7 @@ export default function App() {
   const [isCatsOpen, setIsCatsOpen] = useState(false);
   const [search, setSearch]         = useState('')
   const [showDone, setShowDone]     = useState(false)
+  const [showWaiting, setShowWaiting] = useState(false)
   const [collaborators, setCollaborators] = useState([])
   const [filterAssignee, setFilterAssignee] = useState(null);
   
@@ -1166,6 +1167,12 @@ const getCatCount = (catId) => {
                   >
                     {showDone ? '📂 Actives' : '✅ Terminées'}
                   </button>
+                  <button 
+    onClick={() => { setShowWaiting(!showWaiting); setShowDone(false) }}
+    style={{...s.btnGhost, padding: '4px 12px', fontSize: 11, borderColor: showWaiting ? '#9333ea' : '#e5e0d5', color: showWaiting ? '#9333ea' : '#9a8f7a'}}
+  >
+    ⏸️ En attente
+  </button>
                 </div>
               )}
 
@@ -1242,6 +1249,17 @@ const getCatCount = (catId) => {
                 <p style={{color: '#9a8f7a', marginTop: 8}}>Rien ici pour le moment.</p>
               </div>
             ) : (
+{showDone && (
+  <h2 style={{fontFamily:'serif', fontStyle:'italic', color:'#c9a84c', fontSize:20, marginBottom:8}}>
+    ✅ Tâches terminées
+  </h2>
+)}
+{showWaiting && (
+  <h2 style={{fontFamily:'serif', fontStyle:'italic', color:'#c9a84c', fontSize:20, marginBottom:8}}>
+    ⏸️ Tâches en attente
+  </h2>
+)}
+            
               <div style={s.noteGrid}>
                 {filtered.map(n => (
                   <NoteCard key={n.id} note={n} categories={categories} onEdit={setModal} onDelete={deleteNote} />
