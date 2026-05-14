@@ -421,8 +421,10 @@ function NoteCard({ note, categories, onEdit, onDelete }) {
         <div style={{...s.cardBanner, background:q.color}}>
           <span style={s.bannerEmoji}>{q.emoji}</span>
           <span style={s.bannerLabel}>
-            {q.label} {note.status === 'doing' && ' | 🚀 EN COURS'}
-          </span>
+           {q.label}
+            {note.status === 'doing' && ' | 🚀 EN COURS'}
+            {note.status === 'waiting' && ' | ⏸️ EN ATTENTE'}
+            </span>
         </div>
       )}
       <div style={{...s.cardBody, background: pastelBg, transition: '0.3s'}}>
@@ -575,6 +577,7 @@ useEffect(() => {
               <select value={status} onChange={e => setStatus(e.target.value)} style={{...s.input, padding:'7px 10px'}}>
                 <option value="todo">⏳ À faire</option>
                 <option value="doing">🚀 En cours</option>
+                <option value="waiting">⏸️ En attente</option>
                 <option value="done">✅ Terminé</option>
               </select>
             </div>
@@ -1076,9 +1079,12 @@ export default function App() {
   const filtered = notes
   .filter(n => {
     if (tab === 'notes') {
-      // Dans l'onglet Tâches, on sépare selon le bouton showDone
-      return n.type === 'task' && (showDone ? n.status === 'done' : n.status !== 'done');
-    }
+  return n.type === 'task' && (
+    showDone 
+      ? n.status === 'done' 
+      : n.status !== 'done' && n.status !== 'waiting'
+  );
+}
     if (tab === 'simple_notes') return n.type === 'note';
     return true;
   })
