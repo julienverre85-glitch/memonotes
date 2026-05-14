@@ -1266,8 +1266,10 @@ const getCatCount = (catId) => {
     </div>
   </>
 )}
+          </>
+        )}
 
-       {tab === 'calendar' && <CalendarView notes={notes} onEdit={setModal} />}
+        {tab === 'calendar' && <CalendarView notes={notes} onEdit={setModal} />}
         {tab === 'settings' && (
           <SettingsView 
             session={session} 
