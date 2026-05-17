@@ -1253,7 +1253,8 @@ const s = {
     display: 'flex',
     flexDirection: 'column',
     minHeight: '100vh',
-    background: '#f8f6f1',
+    background: 'linear-gradient(180deg, #f8f6f1 0%, #e8e3d5 100%)', /* Dégradé de ta couleur de base vers un sable doux */
+    backgroundAttachment: 'fixed', /* Garde le dégradé fixe quand tu fais défiler la page */
     touchAction: 'manipulation', 
     overflowX: 'hidden' 
   },
