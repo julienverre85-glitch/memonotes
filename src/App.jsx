@@ -445,16 +445,6 @@ function NoteCard({ note, categories, onEdit, onDelete }) {
           </div>
         )}
 
-{/* On affiche les collaborateurs pour TOUT LE MONDE (Notes et Tâches) */}
-{note.assignees && note.assignees.length > 0 && (
-  <div style={{display: 'flex', flexWrap: 'wrap', gap: 4, marginBottom: 8}}>
-    {note.assignees.map(name => (
-      <span key={name} style={{fontSize: 10, background: 'rgba(26, 18, 8, 0.1)', padding: '2px 8px', borderRadius: 10, color: '#1a1208', display: 'flex', alignItems: 'center', gap: 3}}>
-        👤 {name}
-      </span>
-    ))}
-  </div>
-)}
 
         <div style={s.cardFooter}>
           {/* AFFICHAGE DU RAPPEL (S'il existe) */}
@@ -484,7 +474,6 @@ function NoteModal({ note, categories, collaborators, onSave, onClose, onNewCate
   const [pushNotify, setPushNotify]   = useState(note?.push_notify ?? true)
   const [saving, setSaving] = useState(false)
   const [status, setStatus] = useState(note?.status || 'todo')
-  const [assignees, setAssignees] = useState(note?.assignees || [])
 
   const [localType, setLocalType] = useState(note?.type || (currentTab === 'simple_notes' ? 'note' : 'task'));
 
@@ -523,8 +512,6 @@ useEffect(() => {
       email_notify: isSimpleNote ? false : emailNotify, 
       push_notify: isSimpleNote ? false : pushNotify,
       status: isSimpleNote ? 'todo' : status,
-      // CORRECTION ICI : On enregistre les collaborateurs même pour les notes !
-      assignees: assignees 
     })
     
     setSaving(false)
@@ -581,26 +568,6 @@ useEffect(() => {
               </select>
             </div>
           )}
-
-          <div style={{marginBottom: 12}}>
-            <label style={s.label}>Qui ?</label>
-            <div style={{...s.input, minHeight: 40, padding: '8px 10px', background: '#f8f6f1'}}>
-              {collaborators && collaborators.map(name => (
-                <label key={name} style={{display:'flex', alignItems:'center', gap:8, fontSize:13, marginBottom:4, cursor:'pointer', color:'#1a1208'}}>
-                  <input 
-                    type="checkbox" 
-                    checked={assignees.includes(name)}
-                    onChange={(e) => {
-                      if(e.target.checked) setAssignees([...assignees, name])
-                      else setAssignees(assignees.filter(n => n !== name))
-                    }}
-                  />
-                  {name}
-                </label>
-              ))}
-              {(!collaborators || collaborators.length === 0) && <span style={{fontSize:12, color:'#9a8f7a'}}>Aucun collaborateur créé</span>}
-            </div>
-          </div>
 
           <label style={s.label}>Catégories</label>
           <CatDropdown categories={categories} selected={cats} onChange={setCats} onNewCategory={onNewCategory} />
@@ -828,7 +795,7 @@ function CalendarView({ notes, onEdit }) {
 }
 
 /* ──────────────────── SETTINGS VIEW (COMPLET) ──────────────────── */
-function SettingsView({ session, categories, onCategoriesChange, collaborators, onCollaboratorsChange }) {
+function SettingsView({ session, categories, onCategoriesChange, }) {
   const [pushStatus, setPushStatus] = useState('idle')
   const [pushMsg, setPushMsg]       = useState('')
 
@@ -867,39 +834,6 @@ function SettingsView({ session, categories, onCategoriesChange, collaborators, 
       
       {/* 1. CATÉGORIES */}
       <CatSettings categories={categories} onChange={onCategoriesChange} />
-      
-      {/* 2. L'ÉQUIPE / COLLABORATEURS */}
-      <div style={s.settingsCard}>
-        <h3 style={s.settingsCardTitle}>👥 L'Équipe</h3>
-        <div style={{display:'flex', gap:8, marginBottom:12}}>
-          <input 
-            id="new-collab-input" 
-            placeholder="Nom du collaborateur..." 
-            style={{...s.input, flex:1}}
-            onKeyDown={e => {
-              if(e.key === 'Enter' && e.target.value.trim()){
-                onCollaboratorsChange([...collaborators, e.target.value.trim()]);
-                e.target.value = '';
-              }
-            }}
-          />
-          <button style={s.btn} onClick={() => {
-            const input = document.getElementById('new-collab-input');
-            if(input.value.trim()){
-              onCollaboratorsChange([...collaborators, input.value.trim()]);
-              input.value = '';
-            }
-          }}>＋</button>
-        </div>
-        <div style={{display:'flex', flexWrap:'wrap', gap:6}}>
-          {collaborators && collaborators.map(name => (
-            <span key={name} style={{background:'#f0ece3', color:'#1a1208', padding:'4px 12px', borderRadius:20, fontSize:12, fontWeight: 600, display:'flex', alignItems:'center', gap:8}}>
-              {name}
-              <button onClick={() => onCollaboratorsChange(collaborators.filter(n => n !== name))} style={{border:'none', background:'transparent', cursor:'pointer', fontSize:16, color: '#9a8f7a'}}>×</button>
-            </span>
-          ))}
-        </div>
-      </div>
 
       {/* 3. NOTIFICATIONS PUSH */}
       <div style={s.settingsCard}>
@@ -961,8 +895,6 @@ export default function App() {
   const [search, setSearch]         = useState('')
   const [showDone, setShowDone]     = useState(false)
   const [showWaiting, setShowWaiting] = useState(false)
-  const [collaborators, setCollaborators] = useState([])
-  const [filterAssignee, setFilterAssignee] = useState(null);
   
   useEffect(() => {
     supabase.auth.getSession().then(({data:{session}}) => { setSession(session); setLoading(false) })
@@ -1007,9 +939,7 @@ export default function App() {
   const { data } = await supabase.from('user_settings').select('*').eq('user_id', session.user.id).single()
   
   if (data?.categories) setCategories([...data.categories].sort((a, b) => a.name.localeCompare(b.name)))
-  
-  // CORRECTION : On enlève le texte qui était ici
-  if (data?.collaborators) setCollaborators([...data.collaborators].sort()) 
+   
 }, [session])
 
   useEffect(() => { 
@@ -1028,26 +958,15 @@ export default function App() {
   });
 };
 
-  
- const saveCollaborators = async (newCollabs) => {
-  const sorted = [...newCollabs].sort(); // Tri par ordre alphabétique
-  setCollaborators(sorted);
-  await supabase.from('user_settings').upsert({ 
-    user_id: session.user.id, 
-    collaborators: sorted 
-  });
-};
-
   const saveNote = async (payload) => {
-  const { id, type, status, assignee, ...dataToSave } = payload;
+  const { id, type, status, ...dataToSave } = payload;
   
   if (id) {
     await supabase.from('notes')
       .update({ 
         ...dataToSave, 
         type, 
-        status,    // Ajoute bien ça
-        assignee,  // Et ça
+        status,    
         updated_at: new Date().toISOString() 
       })
       .eq('id', id);
@@ -1056,8 +975,7 @@ export default function App() {
       .insert({ 
         ...dataToSave, 
         type, 
-        status,    // Et ici aussi
-        assignee, 
+        status,
         user_id: session.user.id 
       });
   }
@@ -1101,7 +1019,7 @@ export default function App() {
   .filter(n => filterQ === 0 || n.importance === filterQ)
   .filter(n => filterCats.length === 0 || filterCats.every(id => (n.cats || []).includes(id)))
   .filter(n => !search || n.title.toLowerCase().includes(search.toLowerCase()) || (n.content || '').toLowerCase().includes(search.toLowerCase()))
-  .filter(n => !filterAssignee || (n.assignees || []).includes(filterAssignee))
+
   // LE TRI INTELLIGENT
   .sort((a, b) => {
   if (tab === 'notes') { // Rappel : l'onglet s'appelle 'notes' pour les Tâches
@@ -1242,15 +1160,6 @@ const getCatCount = (catId) => {
     </div>
   )}
 </div>
-
-
-              <div style={{display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center'}}>
-                <span style={s.filterLabel}>Qui ?</span>
-                <button onClick={() => setFilterAssignee(null)} style={{...s.filterBtn, ...(filterAssignee === null ? {background: '#1a1208', color: '#fff'} : {})}}>Tous</button>
-                {collaborators.map(name => (
-                  <button key={name} onClick={() => setFilterAssignee(filterAssignee === name ? null : name)} style={{...s.filterBtn, ...(filterAssignee === name ? {background: '#c9a84c', color: '#fff', borderColor: '#c9a84c'} : {})}}>👤 {name}</button>
-                ))}
-              </div>
             </div>
 
             {/* AFFICHAGE DES FICHES */}
@@ -1287,8 +1196,6 @@ const getCatCount = (catId) => {
             session={session} 
             categories={categories} 
             onCategoriesChange={saveCategories}
-            collaborators={collaborators} 
-            onCollaboratorsChange={saveCollaborators} 
           />
         )}
       </main>
@@ -1297,7 +1204,6 @@ const getCatCount = (catId) => {
         <NoteModal 
           note={modal === 'new' ? null : modal} 
           categories={categories} 
-          collaborators={collaborators} 
           onSave={saveNote} 
           onClose={() => setModal(null)}
           onNewCategory={saveCategories}
