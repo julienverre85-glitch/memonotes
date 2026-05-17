@@ -1063,16 +1063,50 @@ const getCatCount = (catId) => {
             {/* LE BANDEAU GRIS BLEUTÉ (filterPanel) */}
             <div style={s.filterPanel}>
               <div style={s.toolbar}>
-                <input 
-                  style={{...s.input, flex: 1, height: 38, background: '#fff'}} 
-                  placeholder="Rechercher…" 
-                  value={search} 
-                  onChange={e => setSearch(e.target.value)} 
-                />
-                <button style={{...s.btn, whiteSpace: 'nowrap'}} onClick={() => setModal('new')}>
-                  ＋ {tab === 'simple_notes' ? 'Note' : 'Tâche'}
-                </button>
-              </div>
+  {/* CONTENEUR DE LA RECHERCHE AVEC LA CROIX */}
+  <div style={{ position: 'relative', flex: 1 }}>
+    <input 
+      style={{
+        ...s.input, 
+        height: 38, 
+        background: '#fff', 
+        paddingRight: search ? 35 : 12 /* On laisse de la place pour la croix si du texte est tapé */
+      }} 
+      placeholder="Rechercher…" 
+      value={search} 
+      onChange={e => setSearch(e.target.value)} 
+    />
+    
+    {/* LA PETITE CROIX (visible uniquement si search n'est pas vide) */}
+    {search && (
+      <button 
+        onClick={() => setSearch('')}
+        style={{
+          position: 'absolute',
+          right: 10,
+          top: '50%',
+          transform: 'translateY(-50%)',
+          background: 'none',
+          border: 'none',
+          color: '#9a8f7a',
+          fontSize: 20,
+          cursor: 'pointer',
+          padding: 0,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center'
+        }}
+        title="Effacer la recherche"
+      >
+        ×
+      </button>
+    )}
+  </div>
+
+  <button style={{...s.btn, whiteSpace: 'nowrap'}} onClick={() => setModal('new')}>
+    ＋ {tab === 'simple_notes' ? 'Note' : 'Tâche'}
+  </button>
+</div>
 
               {tab === 'notes' && (
                 <div style={{display: 'flex', gap: 5, flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between'}}>
