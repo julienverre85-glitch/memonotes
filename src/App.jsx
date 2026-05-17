@@ -464,7 +464,7 @@ function NoteCard({ note, categories, onEdit, onDelete }) {
 }
 
 /* ──────────────────── NOTE MODAL ──────────────────── */
-function NoteModal({ note, categories, collaborators, onSave, onClose, onNewCategory, currentTab }) {
+function NoteModal({ note, categories, onSave, onClose, onNewCategory, currentTab }) {
   const [title, setTitle]           = useState(note?.title || '')
   const [content, setContent]       = useState(note?.content || '')
   const [importance, setImp]        = useState(note?.importance || 1)
@@ -795,7 +795,7 @@ function CalendarView({ notes, onEdit }) {
 }
 
 /* ──────────────────── SETTINGS VIEW (COMPLET) ──────────────────── */
-function SettingsView({ session, categories, onCategoriesChange, }) {
+function SettingsView({ session, categories, onCategoriesChange }) {
   const [pushStatus, setPushStatus] = useState('idle')
   const [pushMsg, setPushMsg]       = useState('')
 
