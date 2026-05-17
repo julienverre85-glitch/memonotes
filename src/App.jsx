@@ -427,7 +427,7 @@ function NoteCard({ note, categories, onEdit, onDelete }) {
             </span>
         </div>
       )}
-      <div style={{...s.cardBody, background: pastelBg, transition: '0.3s'}}>
+      <div style={{...s.cardBody, background: pastelBg, transition: '0.3s', cursor: 'pointer'}} onClick={() => onEdit(note)}>
         <h3 style={s.cardTitle}>{note.title}</h3>
         
         {/* DATE DE CRÉATION (Plus lisible) */}
@@ -464,10 +464,9 @@ function NoteCard({ note, categories, onEdit, onDelete }) {
             </span>
           )}
           
-          <div style={{...s.cardActions, marginLeft: 'auto'}}>
-            <button style={s.iconBtn} onClick={() => onEdit(note)}>✏️</button>
-            <button style={s.iconBtn} onClick={() => onDelete(note.id)}>🗑️</button>
-          </div>
+         <div style={{...s.cardActions, marginLeft: 'auto'}}>
+  <button style={s.iconBtn} onClick={(e) => { e.stopPropagation(); onDelete(note.id); }}>🗑️</button>
+</div>
         </div>
       </div>
     </div>
@@ -635,7 +634,8 @@ function CatSettings({ categories, onChange }) {
   const [newColor, setNewColor] = useState(CAT_PALETTE[0])
   const [editId, setEditId]     = useState(null)
   const [editName, setEditName] = useState('')
-  const [editColor, setEditColor] = useState('') // On ajoute l'état pour la couleur éditée [cite: 84]
+  const [editColor, setEditColor] = useState('')
+  const [isOpen, setIsOpen]     = useState(false)
 
   const add = () => {
     if (!newName.trim()) return
@@ -645,81 +645,92 @@ function CatSettings({ categories, onChange }) {
 
   return (
     <div style={s.settingsCard}>
-      <h3 style={s.settingsCardTitle}>🏷️ Mes catégories</h3>
-      <div style={{display:'flex', flexDirection:'column', gap:8, marginBottom:14}}>
-        {categories.length === 0 && <p style={{color:'#9a8f7a', fontSize:13}}>Aucune catégorie pour l'instant.</p>}
-        {categories.map(c => (
-          <div key={c.id} style={{display:'flex', flexDirection:'column', gap:4, padding:'10px', background:'#f8f6f1', borderRadius:10}}>
-            <div style={{display:'flex', alignItems:'center', gap:8}}>
-              {/* Le point de couleur change dynamiquement pendant l'édition */}
-              <span style={{width:14, height:14, borderRadius:'50%', background: editId === c.id ? editColor : c.color, flexShrink:0}} />
-              
-              {editId === c.id ? (
-                <input 
-                  autoFocus 
-                  value={editName} 
-                  onChange={e => setEditName(e.target.value)}
-                  style={{flex:1, border:'1px solid #e5e0d5', borderRadius:6, padding:'4px 8px', fontSize:13, background:'#fff'}} 
-                />
-              ) : (
-                <span style={{flex:1, fontSize:13, color:'#1a1208', fontWeight: 500}}>{c.name}</span>
-              )}
+      <div 
+        onClick={() => setIsOpen(o => !o)} 
+        style={{display:'flex', justifyContent:'space-between', alignItems:'center', cursor:'pointer'}}
+      >
+        <h3 style={{...s.settingsCardTitle, marginBottom: 0}}>
+          🏷️ Mes catégories {categories.length > 0 && `(${categories.length})`}
+        </h3>
+        <span style={{fontSize:11, color:'#9a8f7a', fontWeight:600}}>
+          {isOpen ? '▲ Masquer' : '▼ Afficher'}
+        </span>
+      </div>
 
-              {editId === c.id ? (
-                <button 
-                  onClick={() => {
-                    onChange(categories.map(x => x.id === c.id ? {...x, name:editName, color:editColor} : x));
-                    setEditId(null);
-                  }} 
-                  style={{background:'#16a34a', color:'#fff', border:'none', borderRadius:6, padding:'4px 10px', fontSize:11, cursor:'pointer'}}
-                >
-                  Enregistrer
-                </button>
-              ) : (
-                <>
-                  <button onClick={() => {setEditId(c.id); setEditName(c.name); setEditColor(c.color)}} style={{background:'transparent', border:'none', cursor:'pointer', fontSize:14}}>✏️</button>
-                  <button onClick={() => onChange(categories.filter(x => x.id !== c.id))} style={{background:'transparent', border:'none', cursor:'pointer', fontSize:14}}>🗑️</button>
-                </>
-              )}
-            </div>
+      {isOpen && (
+        <div style={{marginTop: 14, animation:'fadeIn 0.2s ease'}}>
+          <div style={{display:'flex', flexDirection:'column', gap:8, marginBottom:14}}>
+            {categories.length === 0 && <p style={{color:'#9a8f7a', fontSize:13}}>Aucune catégorie pour l'instant.</p>}
+            {categories.map(c => (
+              <div key={c.id} style={{display:'flex', flexDirection:'column', gap:4, padding:'10px', background:'#f8f6f1', borderRadius:10}}>
+                <div style={{display:'flex', alignItems:'center', gap:8}}>
+                  <span style={{width:14, height:14, borderRadius:'50%', background: editId === c.id ? editColor : c.color, flexShrink:0}} />
+                  
+                  {editId === c.id ? (
+                    <input 
+                      autoFocus 
+                      value={editName} 
+                      onChange={e => setEditName(e.target.value)}
+                      style={{flex:1, border:'1px solid #e5e0d5', borderRadius:6, padding:'4px 8px', fontSize:13, background:'#fff'}} 
+                    />
+                  ) : (
+                    <span style={{flex:1, fontSize:13, color:'#1a1208', fontWeight: 500}}>{c.name}</span>
+                  )}
 
-            {/* PALETTE QUI APPARAÎT SEULEMENT LORS DE L'ÉDITION */}
-            {editId === c.id && (
-              <div style={{display:'flex', gap:6, flexWrap:'wrap', marginTop:8, padding:'8px', background:'#fff', borderRadius:8, border:'1px solid #e5e0d5'}}>
-                {CAT_PALETTE.map(col => (
-                  <button 
-                    key={col} 
-                    onClick={() => setEditColor(col)} 
-                    style={{
-                      width:22, height:22, borderRadius:'50%', background:col, 
-                      border: editColor === col ? '2px solid #1a1208' : '1px solid transparent', 
-                      cursor:'pointer', padding:0
-                    }} 
-                  />
-                ))}
+                  {editId === c.id ? (
+                    <button 
+                      onClick={() => {
+                        onChange(categories.map(x => x.id === c.id ? {...x, name:editName, color:editColor} : x));
+                        setEditId(null);
+                      }} 
+                      style={{background:'#16a34a', color:'#fff', border:'none', borderRadius:6, padding:'4px 10px', fontSize:11, cursor:'pointer'}}
+                    >
+                      Enregistrer
+                    </button>
+                  ) : (
+                    <>
+                      <button onClick={() => {setEditId(c.id); setEditName(c.name); setEditColor(c.color)}} style={{background:'transparent', border:'none', cursor:'pointer', fontSize:14}}>✏️</button>
+                      <button onClick={() => onChange(categories.filter(x => x.id !== c.id))} style={{background:'transparent', border:'none', cursor:'pointer', fontSize:14}}>🗑️</button>
+                    </>
+                  )}
+                </div>
+
+                {editId === c.id && (
+                  <div style={{display:'flex', gap:6, flexWrap:'wrap', marginTop:8, padding:'8px', background:'#fff', borderRadius:8, border:'1px solid #e5e0d5'}}>
+                    {CAT_PALETTE.map(col => (
+                      <button 
+                        key={col} 
+                        onClick={() => setEditColor(col)} 
+                        style={{
+                          width:22, height:22, borderRadius:'50%', background:col, 
+                          border: editColor === col ? '2px solid #1a1208' : '1px solid transparent', 
+                          cursor:'pointer', padding:0
+                        }} 
+                      />
+                    ))}
+                  </div>
+                )}
               </div>
-            )}
+            ))}
           </div>
-        ))}
-      </div>
 
-      {/* Le reste (Nouvelle catégorie) ne change pas */}
-      <div style={{borderTop:'1px solid #f0ece3', paddingTop:12}}>
-        <p style={{...s.label, marginBottom:8}}>Nouvelle catégorie</p>
-        <div style={{display:'flex', gap:8, alignItems:'center', marginBottom:8}}>
-          <input value={newName} onChange={e => setNewName(e.target.value)} placeholder="Nom…" style={{...s.input, flex:1}} />
-          <button onClick={add} style={s.btn}>＋ Ajouter</button>
+          <div style={{borderTop:'1px solid #f0ece3', paddingTop:12}}>
+            <p style={{...s.label, marginBottom:8}}>Nouvelle catégorie</p>
+            <div style={{display:'flex', gap:8, alignItems:'center', marginBottom:8}}>
+              <input value={newName} onChange={e => setNewName(e.target.value)} placeholder="Nom…" style={{...s.input, flex:1}} />
+              <button onClick={add} style={s.btn}>＋ Ajouter</button>
+            </div>
+            <div style={{display:'flex', gap:6, flexWrap:'wrap'}}>
+              {CAT_PALETTE.map(col => (
+                <button key={col} onClick={() => setNewColor(col)} style={{width:22, height:22, borderRadius:'50%', background:col, border:newColor===col?'3px solid #1a1208':'2px solid transparent', cursor:'pointer'}} />
+              ))}
+            </div>
+          </div>
         </div>
-        <div style={{display:'flex', gap:6, flexWrap:'wrap'}}>
-          {CAT_PALETTE.map(col => (
-            <button key={col} onClick={() => setNewColor(col)} style={{width:22, height:22, borderRadius:'50%', background:col, border:newColor===col?'3px solid #1a1208':'2px solid transparent', cursor:'pointer'}} />
-          ))}
-        </div>
-      </div>
+      )}
     </div>
   )
 }
-
 
 /* ──────────────────── CALENDAR ──────────────────── */
 /* ──────────────────── CALENDAR VIEW (CORRIGÉ) ──────────────────── */
@@ -1424,7 +1435,7 @@ logo: {
   modalFooter: {display:'flex',justifyContent:'flex-end',gap:10,padding:18,borderTop:'1px solid #f0ece3'},
   label:        {fontSize:11,fontWeight:600,color:'#9a8f7a',letterSpacing:'0.5px',textTransform:'uppercase'},
   input:        {background:'#f8f6f1',border:'1px solid #e5e0d5',borderRadius:8,color:'#1a1208',padding:'9px 12px',fontSize:16,width:'100%',fontFamily:'inherit'},
-  textarea:     {resize:'vertical',minHeight:90},
+  textarea:     {resize:'vertical',minHeight:400},
   quadGrid:     {display:'grid',gridTemplateColumns:'1fr 1fr',gap:8},
   quadBtn:      {background:'#f8f6f1',border:'2px solid',borderRadius:10,padding:'10px 8px',cursor:'pointer',display:'flex',flexDirection:'column',alignItems:'center',gap:4,textAlign:'center',fontFamily:'inherit'},
   notifRow:     {display:'flex',gap:20},
