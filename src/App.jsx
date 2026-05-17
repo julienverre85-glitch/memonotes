@@ -1249,12 +1249,12 @@ const getCatCount = (catId) => {
 }
 
 const s = {
- app: {
+app: {
     display: 'flex',
     flexDirection: 'column',
     minHeight: '100vh',
-    background: 'linear-gradient(180deg, #e8e3d5 0%, #f8f6f1 100%)', /* On a inversé les couleurs ici ! */
-    backgroundAttachment: 'fixed',
+    background: 'linear-gradient(180deg, #dce8d6 0%, #f4f9f1 100%)', /* Dégradé vert sauge très doux */
+    backgroundAttachment: 'fixed', 
     touchAction: 'manipulation', 
     overflowX: 'hidden' 
   },
