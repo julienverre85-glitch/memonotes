@@ -912,27 +912,28 @@ export default function App() {
   if (!session) return
 
   const now = new Date()
-  const overdue = notes.filter(n => 
-    n.type === 'task' && 
-    n.status !== 'done' && 
-    n.reminder_at && 
-    new Date(n.reminder_at) < now
-  )
+  const { data: currentNotes } = await supabase
+    .from('notes')
+    .select('*')
+    .neq('status', 'done')
+    .not('reminder_at', 'is', null)
+    .lt('reminder_at', now.toISOString())
+    .eq('type', 'task')
 
-  if (overdue.length === 0) return
+  if (!currentNotes || currentNotes.length === 0) return
 
   const tomorrow = new Date(now)
   tomorrow.setDate(tomorrow.getDate() + 1)
-  tomorrow.setHours(7, 0, 0, 0) // Reporté à 9h le lendemain
+  tomorrow.setHours(7, 0, 0, 0)
 
-  await Promise.all(overdue.map(n =>
+  await Promise.all(currentNotes.map(n =>
     supabase.from('notes')
       .update({ reminder_at: tomorrow.toISOString() })
       .eq('id', n.id)
   ))
 
   await fetchNotes()
-}, [session, notes, fetchNotes])
+}, [session, fetchNotes])
 
  const fetchSettings = useCallback(async () => {
   if (!session) return
